@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Convite de Casamento — Vitória & Patrik
 
-## Getting Started
+Landing page em Next.js + TypeScript + Tailwind para convite de casamento.
 
-First, run the development server:
+## Como rodar
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Onde editar textos e dados
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Hero, evento, detalhes, contagem, RSVP e FAQ: `app/page.tsx` e componentes em `components/`.
+- Data do evento: `components/CountdownSection.tsx` (const `targetDate`).
+- Local, horários e placeholders: `components/DetailsSection.tsx` e `components/EventSection.tsx`.
+- Perguntas do FAQ: `components/FaqSection.tsx`.
+- Imagens de apoio (stock): `public/stock/` (substitua pelos arquivos do casal quando desejar).
 
-## Learn More
+## Integração RSVP (Google Sheets)
 
-To learn more about Next.js, take a look at the following resources:
+A integração funciona com duas opções. Selecione via `NEXT_PUBLIC_RSVP_PROVIDER`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### OPÇÃO A (padrão): Google Forms
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Crie um Google Form com os campos:
+   - Nome completo
+   - Presença (Sim/Não)
+   - Quantidade de acompanhantes
+   - Nomes dos acompanhantes
+   - Telefone/WhatsApp
+   - Restrições alimentares
+   - Mensagem aos noivos
+2. No Form, clique em **Enviar > </>** e copie o link para o endpoint `formResponse`.
+   - Exemplo:
+     ```
+     https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse
+     ```
+3. Encontre os IDs `entry.xxxxx` abrindo o Form e inspecionando o HTML (ou usando o link pré-preenchido).
+4. Configure o `.env.local`:
 
-## Deploy on Vercel
+```bash
+NEXT_PUBLIC_RSVP_PROVIDER=forms
+NEXT_PUBLIC_GOOGLE_FORM_ACTION=https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse
+NEXT_PUBLIC_GOOGLE_FORM_ENTRY_NAME=entry.1111111111
+NEXT_PUBLIC_GOOGLE_FORM_ENTRY_PRESENCE=entry.2222222222
+NEXT_PUBLIC_GOOGLE_FORM_ENTRY_QUANTITY=entry.3333333333
+NEXT_PUBLIC_GOOGLE_FORM_ENTRY_COMPANIONS=entry.4444444444
+NEXT_PUBLIC_GOOGLE_FORM_ENTRY_WHATSAPP=entry.5555555555
+NEXT_PUBLIC_GOOGLE_FORM_ENTRY_RESTRICTIONS=entry.6666666666
+NEXT_PUBLIC_GOOGLE_FORM_ENTRY_MESSAGE=entry.7777777777
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Observação: o envio para Google Forms usa `no-cors`, portanto o retorno não é validado pelo navegador.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### OPÇÃO B: Google Apps Script (Web App)
+
+1. Abra a planilha onde deseja receber os dados.
+2. Vá em **Extensões > Apps Script** e cole o conteúdo de `apps-script/Code.gs`.
+3. Publique como **Web App**:
+   - Execute como: **Você**
+   - Quem tem acesso: **Qualquer pessoa**
+4. Copie a URL gerada e defina no `.env.local`:
+
+```bash
+NEXT_PUBLIC_RSVP_PROVIDER=apps_script
+NEXT_PUBLIC_APPS_SCRIPT_URL=https://script.google.com/macros/s/SEU_ID/exec
+```
+
+## Campos enviados
+
+Os campos enviados pelo RSVP são:
+- `nomeCompleto`
+- `presenca`
+- `quantidadeAcompanhantes`
+- `nomesAcompanhantes`
+- `telefoneWhatsapp`
+- `restricoesAlimentares`
+- `mensagemAosNoivos`

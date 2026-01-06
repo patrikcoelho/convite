@@ -1,26 +1,208 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --champagne: #f7f2ea;
+  --champagne-deep: #efe4d4;
+  --ivory: #fffdf8;
+  --gold: #caa86b;
+  --gold-muted: #b9965f;
+  --gold-bright: #e3c48c;
+  --gold-deep: #a67f43;
+  --ink: #2a2521;
+  --ink-soft: #5e564f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ivory: var(--ivory);
+  --color-champagne: var(--champagne);
+  --color-champagne-deep: var(--champagne-deep);
+  --color-gold: var(--gold);
+  --color-gold-deep: var(--gold-deep);
+  --color-gold-muted: var(--gold-muted);
+  --color-gold-bright: var(--gold-bright);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --font-serif: var(--font-cormorant);
+  --font-script: var(--font-great-vibes);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background:
+    radial-gradient(1200px 800px at 8% 10%, rgba(202, 168, 107, 0.14), transparent 60%),
+    radial-gradient(900px 700px at 90% 0%, rgba(202, 168, 107, 0.1), transparent 55%),
+    radial-gradient(600px 600px at 20% 90%, rgba(255, 255, 255, 0.85), transparent 60%),
+    linear-gradient(135deg, rgba(247, 242, 234, 0.96), rgba(255, 255, 255, 0.92)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  background-blend-mode: normal, normal, normal, normal, overlay;
+  background-size: cover, cover, cover, cover, 200px 200px;
+  color: var(--ink);
+  font-family: var(--font-cormorant), "Times New Roman", serif;
+  font-size: 1.02rem;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif), "Times New Roman", serif;
+}
+
+.section-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.paper-layer {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 242, 234, 0.9));
+  box-shadow: 0 24px 50px -44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.ornamental-bg {
+  background-image:
+    radial-gradient(rgba(202, 168, 107, 0.16) 1px, transparent 1px),
+    radial-gradient(rgba(202, 168, 107, 0.08) 1px, transparent 1px);
+  background-position: 0 0, 18px 18px;
+  background-size: 36px 36px;
+}
+
+.filigree-border {
+  border: 1px solid rgba(202, 168, 107, 0.28);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.gold-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(202, 168, 107, 0.9), transparent);
+}
+
+.gold-foil {
+  background: linear-gradient(120deg, #b48744, #f0d7a0 45%, #a67f43 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 6px 18px rgba(202, 168, 107, 0.25);
+}
+
+.script-font {
+  font-family: var(--font-script), "Great Vibes", cursive;
+}
+
+.input-base {
+  @apply w-full rounded-2xl border border-gold/30 bg-ivory/85 px-4 py-3.5 text-base text-ink shadow-sm outline-none transition focus:border-gold/70 focus:ring-2 focus:ring-gold/20 placeholder:text-ink/40;
+}
+
+.btn-primary {
+  @apply inline-flex h-[56px] items-center justify-center rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-6 font-bold text-ivory shadow-lg shadow-gold/30 transition hover:-translate-y-0.5 hover:shadow-gold/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.btn-secondary {
+  @apply inline-flex h-[56px] items-center justify-center rounded-full border-2 border-gold/40 bg-ivory/90 px-6 font-bold text-ink shadow-lg shadow-ink/10 transition hover:-translate-y-0.5 hover:bg-champagne/70 hover:shadow-ink/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  min-width: 100%;
+}
+
+.envelope-layer {
+  position: absolute;
+  inset: 10% 8% 0;
+  pointer-events: none;
+  border-radius: 36px;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.75), rgba(247, 242, 234, 0.55));
+  box-shadow: 0 30px 80px -50px rgba(0, 0, 0, 0.35);
+}
+
+.envelope-layer::before,
+.envelope-layer::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  width: 76%;
+  height: 36%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 242, 234, 0.75));
+  border: 1px solid rgba(202, 168, 107, 0.2);
+  border-radius: 22px;
+  clip-path: polygon(0 0, 100% 0, 50% 75%);
+  transform-origin: top center;
+  animation: envelopeOpen 8s ease-in-out infinite alternate;
+}
+
+.envelope-layer::after {
+  top: 44%;
+  clip-path: polygon(0 100%, 100% 100%, 50% 30%);
+  animation: none;
+  opacity: 0.55;
+}
+
+@keyframes envelopeOpen {
+  0% {
+    transform: translateY(0) rotateX(0deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-6px) rotateX(12deg);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.55;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-6px);
+  }
+}
+
+.shimmer {
+  animation: shimmer 6s ease-in-out infinite alternate;
+}
+
+.bg-grain {
+  background-image:
+    linear-gradient(135deg, rgba(247, 242, 234, 0.65), rgba(255, 255, 255, 0.9)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  background-size: cover, 160px 160px;
+  background-blend-mode: overlay;
+}
+
+.ui-font {
+  font-family: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.form-serif {
+  font-family: var(--font-merriweather), "Times New Roman", serif;
+}
+
+.lux-card {
+  border-radius: 32px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 242, 234, 0.88));
+  border: 1px solid rgba(202, 168, 107, 0.3);
+  box-shadow: 0 22px 48px -40px rgba(0, 0, 0, 0.28);
+}
+
+.section-gap {
+  padding-top: 2.75rem;
+  padding-bottom: 3.25rem;
+}
+
+::selection {
+  background: rgba(202, 168, 107, 0.3);
+}
+
+.text-xs {
+  font-size: 0.82rem;
+}
+
+.text-sm {
+  font-size: 0.95rem;
 }
