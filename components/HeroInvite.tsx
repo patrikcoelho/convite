@@ -13,29 +13,29 @@ const heroVariants = {
 export default function HeroInvite() {
   return (
     <section className="relative overflow-hidden px-5 pb-16 pt-6 sm:px-8 sm:pt-10">
-      <div className="pointer-events-none absolute inset-0 opacity-80">
+      <div className="pointer-events-none absolute inset-0 opacity-90">
         <FloralCorner className="absolute -left-10 -top-6" />
         <FloralCorner className="absolute -bottom-8 -right-10 rotate-180" />
         <motion.div
-          className="absolute -left-6 top-10 text-gold/30"
-          animate={{ y: [0, -10, 0], opacity: [0.2, 0.45, 0.2] }}
+          className="absolute left-2 top-8 text-gold/60 drop-shadow-[0_4px_12px_rgba(202,168,107,0.35)]"
+          animate={{ y: [0, -10, 0], opacity: [0.35, 0.66, 0.35], scale: [1, 1.06, 1] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Heart className="h-10 w-10" strokeWidth={1.4} />
+        </motion.div>
+        <motion.div
+          className="absolute right-2 top-20 text-gold/55 drop-shadow-[0_4px_12px_rgba(202,168,107,0.35)]"
+          animate={{ y: [0, -12, 0], opacity: [0.3, 0.6, 0.3], scale: [1, 1.05, 1] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
         >
           <Heart className="h-8 w-8" strokeWidth={1.4} />
         </motion.div>
         <motion.div
-          className="absolute -right-4 top-24 text-gold/25"
-          animate={{ y: [0, -12, 0], opacity: [0.15, 0.4, 0.15] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-        >
-          <Heart className="h-6 w-6" strokeWidth={1.4} />
-        </motion.div>
-        <motion.div
-          className="absolute -bottom-6 left-8 text-gold/30"
-          animate={{ y: [0, 8, 0], opacity: [0.2, 0.4, 0.2] }}
+          className="absolute bottom-4 left-10 text-gold/60 drop-shadow-[0_4px_12px_rgba(202,168,107,0.35)]"
+          animate={{ y: [0, 8, 0], opacity: [0.35, 0.6, 0.35], scale: [1, 1.05, 1] }}
           transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut", delay: 1.1 }}
         >
-          <Heart className="h-7 w-7" strokeWidth={1.4} />
+          <Heart className="h-9 w-9" strokeWidth={1.4} />
         </motion.div>
       </div>
 
@@ -58,12 +58,14 @@ export default function HeroInvite() {
               </p>
             </motion.div>
             <motion.h1
-              className="mt-7 text-6xl font-semibold tracking-wide text-ink sm:text-7xl"
+              className="mt-7 text-6xl font-semibold leading-[1.05] tracking-wide text-ink sm:text-7xl"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
             >
-              Vitória <span className="text-gold">&</span> Patrik
+              <span className="block sm:inline">Vitória</span>
+              <span className="block text-gold sm:inline">&</span>
+              <span className="block sm:inline">Patrik</span>
             </motion.h1>
 
             <div className="mt-5 flex flex-col items-center">

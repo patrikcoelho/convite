@@ -12,10 +12,10 @@ export default function DateHighlight() {
       className="mt-4 text-center"
     >
       <div className="flex flex-col items-center gap-2">
-        <span className="script-font gold-foil text-6xl leading-none sm:text-7xl">
+        <span className="date-serif date-numerals gold-foil text-5xl font-semibold leading-[1.15] sm:text-6xl">
           11 de junho
         </span>
-        <span className="text-4xl font-semibold text-ink">2026</span>
+        <span className="date-serif text-4xl font-semibold text-ink">2026</span>
       </div>
     </motion.div>
   );

@@ -30,7 +30,12 @@
   scroll-behavior: smooth;
 }
 
+html {
+  background-color: var(--champagne);
+}
+
 body {
+  background-color: var(--champagne);
   background:
     radial-gradient(1200px 800px at 8% 10%, rgba(202, 168, 107, 0.14), transparent 60%),
     radial-gradient(900px 700px at 90% 0%, rgba(202, 168, 107, 0.1), transparent 55%),
@@ -181,6 +186,16 @@ h4 {
 
 .form-serif {
   font-family: var(--font-merriweather), "Times New Roman", serif;
+}
+
+.date-serif {
+  font-family: var(--font-eb-garamond), "Times New Roman", serif;
+}
+
+.date-numerals {
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+  letter-spacing: 0.02em;
 }
 
 .lux-card {

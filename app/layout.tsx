@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Great_Vibes, Inter, Merriweather } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  EB_Garamond,
+  Great_Vibes,
+  Inter,
+  Merriweather,
+} from "next/font/google";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -25,6 +31,12 @@ const merriweather = Merriweather({
   weight: ["400", "700"],
 });
 
+const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Vitória & Patrik | Convite de Casamento",
   description:
@@ -42,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body
-        className={`${cormorant.variable} ${greatVibes.variable} ${inter.variable} ${merriweather.variable} antialiased`}
+        className={`${cormorant.variable} ${greatVibes.variable} ${inter.variable} ${merriweather.variable} ${ebGaramond.variable} antialiased`}
       >
         {children}
       </body>
