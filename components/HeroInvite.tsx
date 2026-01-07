@@ -16,6 +16,27 @@ export default function HeroInvite() {
       <div className="pointer-events-none absolute inset-0 opacity-80">
         <FloralCorner className="absolute -left-10 -top-6" />
         <FloralCorner className="absolute -bottom-8 -right-10 rotate-180" />
+        <motion.div
+          className="absolute -left-6 top-10 text-gold/30"
+          animate={{ y: [0, -10, 0], opacity: [0.2, 0.45, 0.2] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Heart className="h-8 w-8" strokeWidth={1.4} />
+        </motion.div>
+        <motion.div
+          className="absolute -right-4 top-24 text-gold/25"
+          animate={{ y: [0, -12, 0], opacity: [0.15, 0.4, 0.15] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+        >
+          <Heart className="h-6 w-6" strokeWidth={1.4} />
+        </motion.div>
+        <motion.div
+          className="absolute -bottom-6 left-8 text-gold/30"
+          animate={{ y: [0, 8, 0], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut", delay: 1.1 }}
+        >
+          <Heart className="h-7 w-7" strokeWidth={1.4} />
+        </motion.div>
       </div>
 
       <div className="relative mx-auto max-w-xl">
