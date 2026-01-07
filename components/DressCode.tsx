@@ -13,8 +13,8 @@ export default function DressCode() {
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="relative"
     >
-      <div className="lux-card px-7 py-8 sm:px-8">
-        <div className="flex flex-col items-center text-center">
+      <div className="lux-card flex h-full flex-col px-7 py-8 sm:px-8 sm:py-10">
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-gold/30 bg-ivory/85">
             <Sparkles className="h-5 w-5 text-gold" strokeWidth={1.5} />
           </div>

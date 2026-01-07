@@ -111,7 +111,6 @@ h4 {
   @apply inline-flex h-[56px] items-center justify-center rounded-full border-2 border-gold/40 bg-ivory/90 px-6 font-bold text-ink shadow-lg shadow-ink/10 transition hover:-translate-y-0.5 hover:bg-champagne/70 hover:shadow-ink/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40;
   font-size: 1.15rem;
   line-height: 1.2;
-  min-width: 100%;
 }
 
 .envelope-layer {

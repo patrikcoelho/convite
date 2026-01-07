@@ -49,54 +49,56 @@ export default function Gifts() {
             <Gift className="h-5 w-5 text-gold" strokeWidth={1.5} />
           </div>
           <OrnamentalDivider className="mt-4" />
-          <h3 className="mt-4 text-2xl font-semibold tracking-wide text-ink">
+          <h3 className="mt-4 text-2xl font-semibold tracking-wide text-ink lg:mt-3 lg:text-[1.6rem]">
             Contribua com Nossa Jornada
           </h3>
-          <p className="mt-3 text-xl text-ink-soft">
+          <p className="mt-3 text-xl text-ink-soft lg:mt-2 lg:text-lg lg:leading-relaxed">
             Não temos lista de presentes, mas se você deseja nos presentear, ficaremos muito felizes
             com sua contribuição para nossa nova vida juntos.
           </p>
 
-          <div className="mt-6 flex flex-col items-center gap-3">
+          <div className="mt-6 w-full lg:mt-5">
             <p className="text-sm tracking-[0.2em] text-ink/60">PIX via QR Code</p>
-            <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-gold/20 bg-white/90 shadow-sm">
-              <Image
-                src="/qrcode-pix.png"
-                alt="QR Code Pix"
-                width={120}
-                height={120}
-                className="h-28 w-28"
-              />
-            </div>
-            <p className="text-sm text-ink/60">Escaneie com o app do seu banco</p>
-          </div>
-
-          <div className="mt-5 flex w-full items-center gap-3">
-            <input
-              readOnly
-              value={pixKey}
-              className="input-base flex-1"
-              aria-label="Chave Pix"
-            />
-            <div className="relative">
-              <button
-                type="button"
-                onClick={handleCopy}
-                className={`flex h-12 w-12 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 ${
-                  copyStatus === "success"
-                    ? "border-gold bg-gold text-ivory shadow-lg shadow-gold/30"
-                    : "border-gold/30 bg-ivory/90 text-gold hover:bg-champagne/70"
-                }`}
-                aria-label="Copiar chave Pix"
-                disabled={copyStatus === "success"}
-              >
-                <Copy className="h-5 w-5" strokeWidth={1.6} />
-              </button>
-              {copyStatus === "success" ? (
-                <span className="absolute -top-9 right-0 rounded-full border border-gold/30 bg-ivory/95 px-3 py-1 text-xs text-ink">
-                  Copiado!
-                </span>
-              ) : null}
+            <div className="mt-4 flex flex-col items-center gap-4">
+              <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-gold/20 bg-white/90 shadow-sm lg:h-28 lg:w-28">
+                <Image
+                  src="/qrcode-pix.png"
+                  alt="QR Code Pix"
+                  width={120}
+                  height={120}
+                  className="h-28 w-28 lg:h-24 lg:w-24"
+                />
+              </div>
+              <p className="text-sm text-ink/60">Escaneie com o app do seu banco</p>
+              <div className="flex items-center gap-3">
+                <input
+                  readOnly
+                  value={pixKey}
+                  size={pixKey.length}
+                  className="input-base w-auto max-w-none"
+                  aria-label="Chave Pix"
+                />
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className={`flex h-12 w-12 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 ${
+                      copyStatus === "success"
+                        ? "border-gold bg-gold text-ivory shadow-lg shadow-gold/30"
+                        : "border-gold/30 bg-ivory/90 text-gold hover:bg-champagne/70"
+                    }`}
+                    aria-label="Copiar chave Pix"
+                    disabled={copyStatus === "success"}
+                  >
+                    <Copy className="h-5 w-5" strokeWidth={1.6} />
+                  </button>
+                  {copyStatus === "success" ? (
+                    <span className="absolute -top-9 right-0 rounded-full border border-gold/30 bg-ivory/95 px-3 py-1 text-xs text-ink">
+                      Copiado!
+                    </span>
+                  ) : null}
+                </div>
+              </div>
             </div>
           </div>
           {copyStatus === "error" ? (

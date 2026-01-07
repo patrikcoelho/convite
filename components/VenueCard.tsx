@@ -38,12 +38,22 @@ export default function VenueCard() {
 
         <OrnamentalDivider className="mx-auto mt-7 -scale-y-100" />
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <a href={mapsLink} target="_blank" rel="noreferrer" className="btn-primary w-full">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
+          <a
+            href={mapsLink}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-primary w-full sm:w-auto sm:min-w-[220px]"
+          >
             <Navigation className="mr-2 h-5 w-5" strokeWidth={1.5} />
             Abrir no Google Maps
           </a>
-          <a href={wazeLink} target="_blank" rel="noreferrer" className="btn-secondary w-full">
+          <a
+            href={wazeLink}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-secondary w-full sm:w-auto sm:min-w-[220px]"
+          >
             <MapPin className="mr-2 h-5 w-5" strokeWidth={1.5} />
             Abrir no Waze
           </a>
