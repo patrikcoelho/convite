@@ -1,10 +1,40 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Gift } from "lucide-react";
+import { Copy, Gift } from "lucide-react";
+import Image from "next/image";
 import { OrnamentalDivider } from "@/components/DecorativeSvgs";
+import { useEffect, useRef, useState } from "react";
+
+const pixKey = "presenteie@patrikevitoria.com.br";
 
 export default function Gifts() {
+  const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  async function handleCopy() {
+    setCopyStatus("idle");
+    try {
+      await navigator.clipboard.writeText(pixKey);
+      setCopyStatus("success");
+    } catch (error) {
+      setCopyStatus("error");
+    } finally {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => setCopyStatus("idle"), 2400);
+    }
+  }
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 24 }}
@@ -19,44 +49,63 @@ export default function Gifts() {
             <Gift className="h-5 w-5 text-gold" strokeWidth={1.5} />
           </div>
           <OrnamentalDivider className="mt-4" />
-          <p className="mt-4 text-xs uppercase tracking-[0.45em] text-ink/60">Lista de presentes</p>
-          <h3 className="mt-3 text-xl font-semibold tracking-wide text-ink">Com carinho</h3>
-          <div className="mt-3 text-xl text-ink-soft">
-            <p>Sua presença já é o nosso maior presente.</p>
-            <p className="mt-3">
-              Mas, se desejar nos presentear, sua contribuição será recebida com muito amor.
-            </p>
+          <h3 className="mt-4 text-2xl font-semibold tracking-wide text-ink">
+            Contribua com Nossa Jornada
+          </h3>
+          <p className="mt-3 text-xl text-ink-soft">
+            Não temos lista de presentes, mas se você deseja nos presentear, ficaremos muito felizes
+            com sua contribuição para nossa nova vida juntos.
+          </p>
+
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <p className="text-sm tracking-[0.2em] text-ink/60">PIX via QR Code</p>
+            <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-gold/20 bg-white/90 shadow-sm">
+              <Image
+                src="/qrcode-pix.png"
+                alt="QR Code Pix"
+                width={120}
+                height={120}
+                className="h-28 w-28"
+              />
+            </div>
+            <p className="text-sm text-ink/60">Escaneie com o app do seu banco</p>
           </div>
 
-          <div className="mt-5 flex flex-col items-center gap-3">
-            <div className="flex h-28 w-28 items-center justify-center rounded-xl border border-gold/20 bg-white/90 shadow-sm">
-              <PixQr className="h-24 w-24 text-ink/60" />
+          <div className="mt-5 flex w-full items-center gap-3">
+            <input
+              readOnly
+              value={pixKey}
+              className="input-base flex-1"
+              aria-label="Chave Pix"
+            />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={handleCopy}
+                className={`flex h-12 w-12 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 ${
+                  copyStatus === "success"
+                    ? "border-gold bg-gold text-ivory shadow-lg shadow-gold/30"
+                    : "border-gold/30 bg-ivory/90 text-gold hover:bg-champagne/70"
+                }`}
+                aria-label="Copiar chave Pix"
+                disabled={copyStatus === "success"}
+              >
+                <Copy className="h-5 w-5" strokeWidth={1.6} />
+              </button>
+              {copyStatus === "success" ? (
+                <span className="absolute -top-9 right-0 rounded-full border border-gold/30 bg-ivory/95 px-3 py-1 text-xs text-ink">
+                  Copiado!
+                </span>
+              ) : null}
             </div>
-            <p className="text-sm text-ink/60">Chave Pix: casamento@exemplo.com</p>
           </div>
+          {copyStatus === "error" ? (
+            <p className="mt-2 text-sm text-red-600/90" role="alert">
+              Não foi possível copiar a chave Pix.
+            </p>
+          ) : null}
         </div>
       </div>
     </motion.section>
-  );
-}
-
-function PixQr({ className }: { className?: string }) {
-  return (
-    <svg aria-hidden="true" className={className} viewBox="0 0 120 120" fill="none">
-      <rect width="120" height="120" rx="12" fill="currentColor" opacity="0.08" />
-      <g fill="currentColor">
-        <rect x="12" y="12" width="24" height="24" rx="4" />
-        <rect x="84" y="12" width="24" height="24" rx="4" />
-        <rect x="12" y="84" width="24" height="24" rx="4" />
-        <rect x="42" y="42" width="12" height="12" rx="2" />
-        <rect x="66" y="42" width="10" height="10" rx="2" />
-        <rect x="42" y="66" width="10" height="10" rx="2" />
-        <rect x="62" y="66" width="16" height="16" rx="3" />
-        <rect x="52" y="28" width="8" height="8" rx="2" />
-        <rect x="28" y="52" width="8" height="8" rx="2" />
-        <rect x="90" y="52" width="8" height="8" rx="2" />
-        <rect x="52" y="90" width="8" height="8" rx="2" />
-      </g>
-    </svg>
   );
 }

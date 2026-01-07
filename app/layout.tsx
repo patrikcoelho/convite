@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   title: "Vitória & Patrik | Convite de Casamento",
   description:
     "Convite de casamento de Vitória e Patrik com detalhes do evento e confirmação de presença.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
