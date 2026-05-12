@@ -45,11 +45,13 @@ export default function RSVPCard() {
       throw new Error("Configuração do Google Forms incompleta.");
     }
 
+    const { name, attendance, guests, notes } = entries as Record<string, string>;
     const params = new URLSearchParams();
-    params.append(entries.name, formData.name);
-    params.append(entries.attendance, formData.attendance === "yes" ? "Sim" : "Não");
-    params.append(entries.guests, formData.guests);
-    params.append(entries.notes, formData.notes);
+
+    params.append(name, formData.name);
+    params.append(attendance, formData.attendance === "yes" ? "Sim" : "Não");
+    params.append(guests, formData.guests);
+    params.append(notes, formData.notes);
 
     await fetch(action, {
       method: "POST",
