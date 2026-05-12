@@ -1,4 +1,4 @@
-# Convite de Casamento — Vitória & Patrik
+# Convite de Casamento - Vitoria & Patrik
 
 Landing page em Next.js + TypeScript + Tailwind para convite de casamento.
 
@@ -13,65 +13,47 @@ Acesse `http://localhost:3000`.
 
 ## Onde editar textos e dados
 
-- Hero, evento, detalhes, contagem, RSVP e FAQ: `app/page.tsx` e componentes em `components/`.
-- Data do evento: `components/CountdownSection.tsx` (const `targetDate`).
-- Local, horários e placeholders: `components/DetailsSection.tsx` e `components/EventSection.tsx`.
-- Perguntas do FAQ: `components/FaqSection.tsx`.
-- Imagens de apoio (stock): `public/stock/` (substitua pelos arquivos do casal quando desejar).
+- Hero, evento, RSVP e demais secoes: `app/page.tsx` e componentes em `components/`
+- Imagens de apoio: `public/stock/`
+- Script de gravacao na planilha: `apps-script/Code.gs`
 
-## Integração RSVP (Google Sheets)
+## Integracao RSVP com Google Sheets via Apps Script
 
-A integração funciona com duas opções. Selecione via `NEXT_PUBLIC_RSVP_PROVIDER`.
+O fluxo atual funciona assim:
 
-### OPÇÃO A (padrão): Google Forms
+1. O formulario da pagina envia para `POST /api/rsvp`
+2. A rota do Next.js encaminha os dados para o Web App do Google Apps Script
+3. O Apps Script grava a confirmacao na mesma planilha Google
 
-1. Crie um Google Form com os campos:
-   - Nome completo
-   - Presença (Sim/Não)
-   - Quantidade de acompanhantes
-   - Nomes dos acompanhantes
-   - Telefone/WhatsApp
-   - Restrições alimentares
-   - Mensagem aos noivos
-2. No Form, clique em **Enviar > </>** e copie o link para o endpoint `formResponse`.
-   - Exemplo:
-     ```
-     https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse
-     ```
-3. Encontre os IDs `entry.xxxxx` abrindo o Form e inspecionando o HTML (ou usando o link pré-preenchido).
-4. Configure o `.env.local`:
+### Configuracao do Apps Script
+
+1. Abra a planilha de destino no Google Sheets
+2. Va em `Extensoes > Apps Script`
+3. Cole o conteudo de `apps-script/Code.gs`
+4. Em `Project Settings > Script Properties`, defina `SPREADSHEET_ID` com o ID da planilha
+5. Publique em `Deploy > New deployment > Web app`
+
+Use estas opcoes:
+
+- Execute as: `You`
+- Who has access: `Anyone`
+
+Copie a URL gerada e configure no `.env.local`:
 
 ```bash
-NEXT_PUBLIC_RSVP_PROVIDER=forms
-NEXT_PUBLIC_GOOGLE_FORM_ACTION=https://docs.google.com/forms/d/e/SEU_FORM_ID/formResponse
-NEXT_PUBLIC_GOOGLE_FORM_ENTRY_NAME=entry.1111111111
-NEXT_PUBLIC_GOOGLE_FORM_ENTRY_PRESENCE=entry.2222222222
-NEXT_PUBLIC_GOOGLE_FORM_ENTRY_QUANTITY=entry.3333333333
-NEXT_PUBLIC_GOOGLE_FORM_ENTRY_COMPANIONS=entry.4444444444
-NEXT_PUBLIC_GOOGLE_FORM_ENTRY_WHATSAPP=entry.5555555555
-NEXT_PUBLIC_GOOGLE_FORM_ENTRY_RESTRICTIONS=entry.6666666666
-NEXT_PUBLIC_GOOGLE_FORM_ENTRY_MESSAGE=entry.7777777777
+APPS_SCRIPT_URL=https://script.google.com/macros/s/SEU_ID/exec
 ```
 
-Observação: o envio para Google Forms usa `no-cors`, portanto o retorno não é validado pelo navegador.
-
-### OPÇÃO B: Google Apps Script (Web App)
-
-1. Abra a planilha onde deseja receber os dados.
-2. Vá em **Extensões > Apps Script** e cole o conteúdo de `apps-script/Code.gs`.
-3. Publique como **Web App**:
-   - Execute como: **Você**
-   - Quem tem acesso: **Qualquer pessoa**
-4. Copie a URL gerada e defina no `.env.local`:
+Tambem aceito por compatibilidade:
 
 ```bash
-NEXT_PUBLIC_RSVP_PROVIDER=apps_script
 NEXT_PUBLIC_APPS_SCRIPT_URL=https://script.google.com/macros/s/SEU_ID/exec
 ```
 
-## Campos enviados
+### Campos enviados
 
-Os campos enviados pelo RSVP são:
+Os campos enviados para o Apps Script sao:
+
 - `nomeCompleto`
 - `presenca`
 - `quantidadeAcompanhantes`
@@ -79,3 +61,8 @@ Os campos enviados pelo RSVP são:
 - `telefoneWhatsapp`
 - `restricoesAlimentares`
 - `mensagemAosNoivos`
+
+## Observacoes
+
+- O endpoint do Apps Script agora fica no servidor do Next, entao o navegador nao precisa chamar o Google diretamente.
+- Isso reduz problemas de CORS e evita expor a URL do Web App no bundle do cliente.

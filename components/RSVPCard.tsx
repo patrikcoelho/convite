@@ -21,7 +21,7 @@ const initialState: FormState = {
 
 export default function RSVPCard() {
   const [formData, setFormData] = useState<FormState>(initialState);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -32,62 +32,29 @@ export default function RSVPCard() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
-  async function submitToForms() {
-    const action = process.env.NEXT_PUBLIC_GOOGLE_FORM_ACTION;
-    const entries = {
-      name: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_NAME,
-      attendance: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_PRESENCE,
-      guests: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_QUANTITY,
-      notes: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_MESSAGE,
-    };
-
-    if (!action || Object.values(entries).some((value) => !value)) {
-      throw new Error("Configuração do Google Forms incompleta.");
-    }
-
-    const { name, attendance, guests, notes } = entries as Record<string, string>;
-    const params = new URLSearchParams();
-
-    params.append(name, formData.name);
-    params.append(attendance, formData.attendance === "yes" ? "Sim" : "Não");
-    params.append(guests, formData.guests);
-    params.append(notes, formData.notes);
-
-    await fetch(action, {
+  async function submitRsvp() {
+    const response = await fetch("/api/rsvp", {
       method: "POST",
-      mode: "no-cors",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
       },
-      body: params.toString(),
-    });
-  }
-
-  async function submitToAppsScript() {
-    const endpoint = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL;
-
-    if (!endpoint) {
-      throw new Error("Informe a URL do Apps Script.");
-    }
-
-    const payload = {
-      nomeCompleto: formData.name,
-      presenca: formData.attendance === "yes" ? "Sim" : "Não",
-      quantidadeAcompanhantes: Number(formData.guests),
-      nomesAcompanhantes: [],
-      telefoneWhatsapp: "",
-      restricoesAlimentares: "",
-      mensagemAosNoivos: formData.notes,
-    };
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        nomeCompleto: formData.name.trim(),
+        presenca: formData.attendance === "yes" ? "Sim" : "Não",
+        quantidadeAcompanhantes: Number(formData.guests),
+        nomesAcompanhantes: [],
+        telefoneWhatsapp: "",
+        restricoesAlimentares: "",
+        mensagemAosNoivos: formData.notes.trim(),
+      }),
     });
 
-    if (!response.ok) {
-      throw new Error("Falha ao enviar confirmação.");
+    const data = (await response.json().catch(() => null)) as
+      | { ok?: boolean; message?: string }
+      | null;
+
+    if (!response.ok || !data?.ok) {
+      throw new Error(data?.message || "Falha ao enviar confirmação.");
     }
   }
 
@@ -108,14 +75,7 @@ export default function RSVPCard() {
     setIsSubmitting(true);
 
     try {
-      const provider = process.env.NEXT_PUBLIC_RSVP_PROVIDER ?? "forms";
-
-      if (provider === "apps_script") {
-        await submitToAppsScript();
-      } else {
-        await submitToForms();
-      }
-
+      await submitRsvp();
       setFormData(initialState);
       setIsSubmitted(true);
     } catch (submitError) {
@@ -248,7 +208,7 @@ export default function RSVPCard() {
               aria-busy={isSubmitting}
             >
               <CheckCircle className="mr-2 h-5 w-5" strokeWidth={1.6} />
-              Enviar confirmação
+              {isSubmitting ? "Enviando..." : "Enviar confirmação"}
             </motion.button>
           </form>
         )}
