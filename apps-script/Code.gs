@@ -1,16 +1,6 @@
 const CONFIG = {
   preferredSheetNames: ["Página1"],
   legacyHeaders: ["Nome", "Filhos", "Vai?", "Mensagem"],
-  detailedHeaders: [
-    "Timestamp",
-    "Nome",
-    "Presenca",
-    "Quantidade",
-    "Acompanhantes",
-    "WhatsApp",
-    "Restricoes",
-    "Mensagem",
-  ],
 };
 
 function doGet() {
@@ -26,14 +16,13 @@ function doPost(e) {
     const payload = parseRequestPayload(e);
     validatePayload(payload);
 
-    const target = resolveTargetSheet();
-    target.sheet.appendRow(buildRow(target.mode, payload));
+    const sheet = resolveTargetSheet();
+    appendLegacyRow(sheet, payload);
 
     return jsonResponse({
       ok: true,
-      message: 'Confirmação salva com sucesso na aba "' + target.sheet.getName() + '".',
-      sheet: target.sheet.getName(),
-      mode: target.mode,
+      message: 'Confirmação salva com sucesso na aba "' + sheet.getName() + '".',
+      sheet: sheet.getName(),
     });
   } catch (error) {
     return jsonResponse({
@@ -72,12 +61,6 @@ function fromParameterObject(params) {
     presenca: params.presenca || params.attendance || "",
     quantidadeAcompanhantes:
       params.quantidadeAcompanhantes || params.guests || "0",
-    nomesAcompanhantes: splitCompanions(
-      params.nomesAcompanhantes || params.companions || ""
-    ),
-    telefoneWhatsapp: params.telefoneWhatsapp || params.whatsapp || "",
-    restricoesAlimentares:
-      params.restricoesAlimentares || params.restricoes || "",
     mensagemAosNoivos: params.mensagemAosNoivos || params.notes || "",
   };
 }
@@ -98,83 +81,75 @@ function resolveTargetSheet() {
     PropertiesService.getScriptProperties().getProperty("SHEET_NAME");
   const candidates = explicitSheetName
     ? [explicitSheetName]
-    : CONFIG.preferredSheetNames.concat(getSheetNames(spreadsheet));
+    : CONFIG.preferredSheetNames;
 
   for (var i = 0; i < candidates.length; i++) {
-    const candidate = candidates[i];
-    const sheet = spreadsheet.getSheetByName(candidate);
+    const sheet = spreadsheet.getSheetByName(candidates[i]);
 
     if (!sheet) {
       continue;
     }
 
-    const mode = detectSheetMode(sheet);
-    if (mode) {
-      return { sheet: sheet, mode: mode };
-    }
+    ensureLegacyHeaders(sheet);
+    return sheet;
   }
 
   throw new Error(
-    'Nenhuma aba compatível encontrada. Configure a Script Property SHEET_NAME com a aba correta ou use uma aba com cabeçalhos "' +
-      CONFIG.legacyHeaders.join(", ") +
-      '" ou "' +
-      CONFIG.detailedHeaders.join(", ") +
+    'Aba de destino não encontrada. Defina a Script Property SHEET_NAME ou use uma aba chamada "' +
+      CONFIG.preferredSheetNames[0] +
       '".'
   );
 }
 
-function detectSheetMode(sheet) {
-  const headers = getHeaderValues(sheet);
+function ensureLegacyHeaders(sheet) {
+  const headers = getHeaderValues(sheet, CONFIG.legacyHeaders.length);
 
-  if (matchesHeaders(headers, CONFIG.legacyHeaders)) {
-    return "legacy";
+  const matches = CONFIG.legacyHeaders.every(function(header, index) {
+    return headers[index] === header;
+  });
+
+  if (!matches) {
+    throw new Error(
+      'A aba "' +
+        sheet.getName() +
+        '" não está no formato esperado. Cabeçalhos esperados: ' +
+        CONFIG.legacyHeaders.join(", ")
+    );
   }
-
-  if (matchesHeaders(headers, CONFIG.detailedHeaders)) {
-    return "detailed";
-  }
-
-  return null;
 }
 
-function getHeaderValues(sheet) {
-  const maxColumns = Math.max(
-    CONFIG.legacyHeaders.length,
-    CONFIG.detailedHeaders.length
-  );
-  const row = sheet.getRange(1, 1, 1, maxColumns).getValues()[0];
+function getHeaderValues(sheet, columnCount) {
+  const row = sheet.getRange(1, 1, 1, columnCount).getValues()[0];
 
   return row.map(function(value) {
     return String(value || "").trim();
   });
 }
 
-function matchesHeaders(currentHeaders, expectedHeaders) {
-  return expectedHeaders.every(function(header, index) {
-    return currentHeaders[index] === header;
-  });
-}
-
-function buildRow(mode, payload) {
-  if (mode === "legacy") {
-    return [
-      payload.nomeCompleto || "",
-      Number(payload.quantidadeAcompanhantes || 0),
-      normalizePresence(payload.presenca),
-      payload.mensagemAosNoivos || "",
-    ];
-  }
-
-  return [
-    new Date(),
+function appendLegacyRow(sheet, payload) {
+  const row = [
     payload.nomeCompleto || "",
-    payload.presenca || "",
     Number(payload.quantidadeAcompanhantes || 0),
-    normalizeCompanions(payload.nomesAcompanhantes),
-    payload.telefoneWhatsapp || "",
-    payload.restricoesAlimentares || "",
+    normalizePresence(payload.presenca),
     payload.mensagemAosNoivos || "",
   ];
+
+  appendByHeaders(sheet, CONFIG.legacyHeaders, row);
+}
+
+function appendByHeaders(sheet, expectedHeaders, values) {
+  const headers = getHeaderValues(sheet, sheet.getLastColumn());
+  const nextRow = sheet.getLastRow() + 1;
+
+  expectedHeaders.forEach(function(header, index) {
+    const columnIndex = headers.indexOf(header);
+
+    if (columnIndex === -1) {
+      throw new Error('Coluna obrigatória não encontrada: "' + header + '".');
+    }
+
+    sheet.getRange(nextRow, columnIndex + 1).setValue(values[index]);
+  });
 }
 
 function normalizePresence(value) {
@@ -189,12 +164,6 @@ function normalizePresence(value) {
   }
 
   return value || "";
-}
-
-function getSheetNames(spreadsheet) {
-  return spreadsheet.getSheets().map(function(sheet) {
-    return sheet.getName();
-  });
 }
 
 function getSpreadsheet() {
@@ -215,27 +184,6 @@ function getSpreadsheet() {
   }
 
   return activeSpreadsheet;
-}
-
-function normalizeCompanions(value) {
-  if (Array.isArray(value)) {
-    return value.filter(Boolean).join(", ");
-  }
-
-  return value || "";
-}
-
-function splitCompanions(value) {
-  if (!value) {
-    return [];
-  }
-
-  return String(value)
-    .split(",")
-    .map(function(item) {
-      return item.trim();
-    })
-    .filter(Boolean);
 }
 
 function jsonResponse(data) {
