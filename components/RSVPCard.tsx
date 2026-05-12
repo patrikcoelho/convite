@@ -19,9 +19,6 @@ const initialState: FormState = {
   notes: "",
 };
 
-const webhookUrl =
-  "https://n8n.srv921428.hstgr.cloud/webhook/confirmacao-convidado";
-
 export default function RSVPCard() {
   const [formData, setFormData] = useState<FormState>(initialState);
   const [error, setError] = useState<string>("");
@@ -33,6 +30,63 @@ export default function RSVPCard() {
   ) {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function submitToForms() {
+    const action = process.env.NEXT_PUBLIC_GOOGLE_FORM_ACTION;
+    const entries = {
+      name: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_NAME,
+      attendance: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_PRESENCE,
+      guests: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_QUANTITY,
+      notes: process.env.NEXT_PUBLIC_GOOGLE_FORM_ENTRY_MESSAGE,
+    };
+
+    if (!action || Object.values(entries).some((value) => !value)) {
+      throw new Error("Configuração do Google Forms incompleta.");
+    }
+
+    const params = new URLSearchParams();
+    params.append(entries.name, formData.name);
+    params.append(entries.attendance, formData.attendance === "yes" ? "Sim" : "Não");
+    params.append(entries.guests, formData.guests);
+    params.append(entries.notes, formData.notes);
+
+    await fetch(action, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params.toString(),
+    });
+  }
+
+  async function submitToAppsScript() {
+    const endpoint = process.env.NEXT_PUBLIC_APPS_SCRIPT_URL;
+
+    if (!endpoint) {
+      throw new Error("Informe a URL do Apps Script.");
+    }
+
+    const payload = {
+      nomeCompleto: formData.name,
+      presenca: formData.attendance === "yes" ? "Sim" : "Não",
+      quantidadeAcompanhantes: Number(formData.guests),
+      nomesAcompanhantes: [],
+      telefoneWhatsapp: "",
+      restricoesAlimentares: "",
+      mensagemAosNoivos: formData.notes,
+    };
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error("Falha ao enviar confirmação.");
+    }
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -52,19 +106,18 @@ export default function RSVPCard() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const provider = process.env.NEXT_PUBLIC_RSVP_PROVIDER ?? "forms";
 
-      if (!response.ok) {
-        throw new Error("Falha ao enviar");
+      if (provider === "apps_script") {
+        await submitToAppsScript();
+      } else {
+        await submitToForms();
       }
 
       setFormData(initialState);
       setIsSubmitted(true);
     } catch (submitError) {
+      console.error(submitError);
       setError("Não foi possível enviar sua confirmação. Tente novamente.");
     } finally {
       setIsSubmitting(false);
@@ -86,7 +139,9 @@ export default function RSVPCard() {
             <CheckCircle className="h-5 w-5 text-gold" strokeWidth={1.5} />
           </div>
           <OrnamentalDivider className="mt-4" />
-          <h3 className="mt-4 text-3xl font-semibold tracking-wide text-ink">Confirme sua presença</h3>
+          <h3 className="mt-4 text-3xl font-semibold tracking-wide text-ink">
+            Confirme sua presença
+          </h3>
           <p className="mt-2 text-xl text-ink-soft">
             Sua resposta nos ajuda a preparar cada detalhe com carinho.
           </p>
@@ -97,7 +152,8 @@ export default function RSVPCard() {
             <CheckCircle className="mx-auto h-7 w-7 text-gold" strokeWidth={1.5} />
             <p className="mt-3 text-lg font-semibold text-ink">Confirmação recebida</p>
             <p className="mt-2 text-base text-ink-soft">
-              Obrigado por confirmar sua presença. Estamos felizes por compartilhar esse dia com você.
+              Obrigado por confirmar sua presença. Estamos felizes por compartilhar esse dia com
+              você.
             </p>
           </div>
         ) : (
@@ -150,9 +206,7 @@ export default function RSVPCard() {
                     required
                     className="input-base appearance-none pr-12"
                     style={{
-                      color: formData.attendance
-                        ? "var(--ink)"
-                        : "rgba(42, 37, 33, 0.4)",
+                      color: formData.attendance ? "var(--ink)" : "rgba(42, 37, 33, 0.4)",
                     }}
                   >
                     <option value="">Selecione</option>
