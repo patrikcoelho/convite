@@ -29,11 +29,14 @@ export default function VenueCard() {
           <p className="mt-3 text-sm text-ink-soft">{address}</p>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-sm text-ink-soft">
-          <div className="flex items-center gap-2 text-center">
-            <Clock className="h-4 w-4 text-gold" strokeWidth={1.5} />
-            <span>Cerimônia e recepção/jantar no mesmo local</span>
-          </div>
+        <div className="mt-7 flex flex-col items-center text-center">
+          <Clock className="h-4 w-4 text-gold" strokeWidth={1.5} />
+          <span className="date-serif mt-2 text-3xl font-semibold leading-none text-ink">
+            17:00
+          </span>
+          <span className="mt-3 max-w-xs text-xs uppercase leading-relaxed tracking-[0.26em] text-ink/55">
+            Cerimônia e recepção/jantar no mesmo local
+          </span>
         </div>
 
         <OrnamentalDivider className="mx-auto mt-7 -scale-y-100" />

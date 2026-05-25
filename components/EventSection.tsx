@@ -56,7 +56,7 @@ export default function EventSection() {
                   </div>
                   <p className="mt-3 text-sm text-ink-soft">{item.description}</p>
                   <p className="mt-3 text-xs uppercase tracking-[0.25em] text-gold-muted">
-                    Horário a definir
+                    17:00
                   </p>
                 </div>
               ))}

@@ -16,6 +16,9 @@ export default function DateHighlight() {
           11 de junho
         </span>
         <span className="date-serif text-4xl font-semibold text-ink">2026</span>
+        <span className="mt-3 text-sm font-medium tracking-[0.35em] text-gold-muted sm:text-[0.8rem]">
+          às 17:00
+        </span>
       </div>
     </motion.div>
   );

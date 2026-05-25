@@ -25,7 +25,7 @@ export default function DetailsSection() {
                   </span>
                   <div>
                     <h3 className="text-base font-semibold text-ink">Data e Horário</h3>
-                    <p className="mt-2">11 de junho de 2026 • Horário a definir</p>
+                    <p className="mt-2">11 de junho de 2026 • 17:00</p>
                     <p className="mt-1">Cerimônia e recepção no mesmo local.</p>
                   </div>
                 </div>
