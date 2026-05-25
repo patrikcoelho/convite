@@ -22,7 +22,7 @@ import {
 const pixKey = "presenteie@patrikevitoria.com.br";
 const pixMerchantName = "VITORIA E PATRIK";
 const pixMerchantCity = "BOA VISTA";
-const cardPaymentUrl = process.env.NEXT_PUBLIC_CARD_PAYMENT_URL?.trim() ?? "";
+const freePaymentUrl = "https://www.asaas.com/c/r46edo1djdluvwes";
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -60,6 +60,10 @@ function txIdFromTitle(title: string) {
 }
 
 function buildPixPayload(idea: GiftIdea) {
+  if (typeof idea.amount !== "number") {
+    return pixKey;
+  }
+
   const merchantAccount = emv("00", "br.gov.bcb.pix") + emv("01", pixKey);
   const additionalData = emv("05", txIdFromTitle(idea.title) || "PRESENTE");
   const payload =
@@ -77,9 +81,33 @@ function buildPixPayload(idea: GiftIdea) {
   return payload + crc16(payload);
 }
 
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    try {
+      return document.execCommand("copy");
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+}
+
 type GiftIdea = {
   title: string;
-  amount: number;
+  amount?: number;
+  paymentUrl: string;
   image: string;
   imageAlt: string;
   icon: LucideIcon;
@@ -97,6 +125,7 @@ const sections: Array<{
       {
         title: "Jogo de toalhas do casal",
         amount: 120,
+        paymentUrl: "https://www.asaas.com/c/s2rfaauyfbxn4h2a",
         image: pexels(12679),
         imageAlt: "Toalhas dobradas em banheiro claro e elegante",
         icon: Bath,
@@ -104,6 +133,7 @@ const sections: Array<{
       {
         title: "Kit de organização da casa",
         amount: 120,
+        paymentUrl: "https://www.asaas.com/c/x96d7it904ayo47w",
         image: pexels(8581052),
         imageAlt: "Ambiente organizado com caixas e cestos",
         icon: House,
@@ -111,6 +141,7 @@ const sections: Array<{
       {
         title: "Primeira compra do supermercado",
         amount: 180,
+        paymentUrl: "https://www.asaas.com/c/t6mu9g2hh4r8ksjc",
         image: pexels(264636),
         imageAlt: "Frutas, legumes e itens de mercado sobre a mesa",
         icon: Coffee,
@@ -118,6 +149,7 @@ const sections: Array<{
       {
         title: "Jantar especial dos recém-casados",
         amount: 150,
+        paymentUrl: "https://www.asaas.com/c/wts4l06uxq0mns9m",
         image: pexels(1640777),
         imageAlt: "Mesa de jantar romântica em ambiente aconchegante",
         icon: UtensilsCrossed,
@@ -125,6 +157,7 @@ const sections: Array<{
       {
         title: "Conjunto de taças para brindar",
         amount: 180,
+        paymentUrl: "https://www.asaas.com/c/0yt3eya4uz3n3fdf",
         image: pexels(1123260),
         imageAlt: "Taças elegantes sobre mesa de celebração",
         icon: Wine,
@@ -132,6 +165,7 @@ const sections: Array<{
       {
         title: "Cafeteira para os cafés da manhã juntos",
         amount: 200,
+        paymentUrl: "https://www.asaas.com/c/tc1oq2p50t6zh0kg",
         image: pexels(11206191),
         imageAlt: "Cafeteira elétrica em uma bancada de cozinha",
         icon: Coffee,
@@ -139,6 +173,7 @@ const sections: Array<{
       {
         title: "Kit cama nova do casal",
         amount: 220,
+        paymentUrl: "https://www.asaas.com/c/uv8emcviuf91utgz",
         image: pexels(17404725),
         imageAlt: "Quarto com cama bem arrumada e tons claros",
         icon: Hotel,
@@ -146,6 +181,7 @@ const sections: Array<{
       {
         title: "Utensílios para cozinha",
         amount: 250,
+        paymentUrl: "https://www.asaas.com/c/duzemj0tyas05o19",
         image: pexels(9475353),
         imageAlt: "Utensílios e panelas organizados na cozinha",
         icon: UtensilsCrossed,
@@ -153,6 +189,7 @@ const sections: Array<{
       {
         title: "Ajuda para eletrodomésticos",
         amount: 300,
+        paymentUrl: "https://www.asaas.com/c/rgwdxpdtqe58i7wu",
         image: pexels(4258272),
         imageAlt: "Eletrodomésticos modernos em cozinha iluminada",
         icon: Microwave,
@@ -160,6 +197,7 @@ const sections: Array<{
       {
         title: "Contribuição para mobiliar o lar",
         amount: 400,
+        paymentUrl: "https://www.asaas.com/c/r3x0bb7y6kjfl19e",
         image: pexels(13013748),
         imageAlt: "Sala aconchegante com móveis de madeira clara",
         icon: Sofa,
@@ -167,6 +205,7 @@ const sections: Array<{
       {
         title: "Mesa lateral ou aparador",
         amount: 550,
+        paymentUrl: "https://www.asaas.com/c/h7hwrn62bh2xeq12",
         image: pexels(1571460),
         imageAlt: "Mesa lateral decorativa em ambiente de estar",
         icon: Sofa,
@@ -174,6 +213,7 @@ const sections: Array<{
       {
         title: "Micro-ondas ou air fryer",
         amount: 650,
+        paymentUrl: "https://www.asaas.com/c/8yq1l2pk3yd0dgfz",
         image: pexels(1599791),
         imageAlt: "Pequeno eletrodoméstico em cozinha moderna",
         icon: Microwave,
@@ -181,6 +221,7 @@ const sections: Array<{
       {
         title: "Contribuição para máquina de lavar",
         amount: 1200,
+        paymentUrl: "https://www.asaas.com/c/49yspj9tltzfnahx",
         image: pexels(5591463),
         imageAlt: "Área de lavanderia organizada e moderna",
         icon: House,
@@ -194,6 +235,7 @@ const sections: Array<{
       {
         title: "Café da manhã especial",
         amount: 120,
+        paymentUrl: "https://www.asaas.com/c/biokokrxv44iehap",
         image: pexels(376464),
         imageAlt: "Mesa de café da manhã com bebidas e frutas",
         icon: Coffee,
@@ -201,6 +243,7 @@ const sections: Array<{
       {
         title: "Passeio romântico",
         amount: 150,
+        paymentUrl: "https://www.asaas.com/c/ofedjrfu6d6ooohr",
         image: pexels(346885),
         imageAlt: "Passeio em cidade com clima de viagem",
         icon: Gift,
@@ -208,6 +251,7 @@ const sections: Array<{
       {
         title: "Almoço especial em Buenos Aires",
         amount: 180,
+        paymentUrl: "https://www.asaas.com/c/yztbovbbq3fzkag9",
         image: pexels(262978),
         imageAlt: "Mesa de almoço elegante em restaurante da cidade",
         icon: UtensilsCrossed,
@@ -215,6 +259,7 @@ const sections: Array<{
       {
         title: "Jantar romântico na viagem",
         amount: 220,
+        paymentUrl: "https://www.asaas.com/c/8bfa1cuvr6fsprul",
         image: pexels(3171837),
         imageAlt: "Taças e mesa de jantar em ambiente intimista",
         icon: Wine,
@@ -222,6 +267,7 @@ const sections: Array<{
       {
         title: "Massagem relaxante",
         amount: 250,
+        paymentUrl: "https://www.asaas.com/c/pfkb56r7jh0sec5g",
         image: pexels(3757942),
         imageAlt: "Espaço de spa com clima relaxante",
         icon: Bath,
@@ -229,6 +275,7 @@ const sections: Array<{
       {
         title: "Passeio turístico especial",
         amount: 300,
+        paymentUrl: "https://www.asaas.com/c/64dqyczlnzgqklh0",
         image: pexels(2444403),
         imageAlt: "Rua histórica com clima de passeio turístico",
         icon: Gift,
@@ -236,6 +283,7 @@ const sections: Array<{
       {
         title: "Uma diária da hospedagem",
         amount: 400,
+        paymentUrl: "https://www.asaas.com/c/lat7f0a8fqxl6n2h",
         image: pexels(271624),
         imageAlt: "Quarto de hotel confortável e elegante",
         icon: Hotel,
@@ -243,6 +291,7 @@ const sections: Array<{
       {
         title: "Upgrade do quarto do casal",
         amount: 500,
+        paymentUrl: "https://www.asaas.com/c/lya16hq10aosw7uk",
         image: pexels(271618),
         imageAlt: "Quarto de hotel com atmosfera sofisticada",
         icon: Hotel,
@@ -250,6 +299,7 @@ const sections: Array<{
       {
         title: "Experiência gastronômica premium",
         amount: 650,
+        paymentUrl: "https://www.asaas.com/c/8gnn0lqi1mm5rj4k",
         image: pexels(1267320),
         imageAlt: "Prato refinado em restaurante elegante",
         icon: UtensilsCrossed,
@@ -257,6 +307,7 @@ const sections: Array<{
       {
         title: "Passeio completo em Buenos Aires",
         amount: 800,
+        paymentUrl: "https://www.asaas.com/c/rjtgre1lkaexrbrt",
         image: pexels(358319),
         imageAlt: "Paisagem urbana inspirada em Buenos Aires",
         icon: Gift,
@@ -264,6 +315,7 @@ const sections: Array<{
       {
         title: "Bate-volta a Colonia del Sacramento",
         amount: 900,
+        paymentUrl: "https://www.asaas.com/c/wmhryjsvpfdu8ck3",
         image: pexels(1174732),
         imageAlt: "Rua charmosa em cidade histórica uruguaia",
         icon: Gift,
@@ -277,6 +329,7 @@ const sections: Array<{
       {
         title: "Cinema + jantar dos recém-casados",
         amount: 120,
+        paymentUrl: "https://www.asaas.com/c/55rmpi5z1eow4eua",
         image: pexels(7234322),
         imageAlt: "Sala de cinema com clima aconchegante",
         icon: Gift,
@@ -284,6 +337,7 @@ const sections: Array<{
       {
         title: "Noite especial a dois",
         amount: 150,
+        paymentUrl: "https://www.asaas.com/c/fhbbvmkxircpfj1b",
         image: pexels(941861),
         imageAlt: "Mesa de jantar em atmosfera romântica",
         icon: Wine,
@@ -291,6 +345,7 @@ const sections: Array<{
       {
         title: "Assinatura de streaming para maratonas",
         amount: 180,
+        paymentUrl: "https://www.asaas.com/c/d3ck48csx1jdllw5",
         image: pexels(4009401),
         imageAlt: "Sala de estar confortável com televisão",
         icon: House,
@@ -298,6 +353,7 @@ const sections: Array<{
       {
         title: "Encontro gastronômico do casal",
         amount: 220,
+        paymentUrl: "https://www.asaas.com/c/nsu328c8wiq1exen",
         image: pexels(6287525),
         imageAlt: "Mesa de restaurante com pratos bem servidos",
         icon: UtensilsCrossed,
@@ -305,8 +361,16 @@ const sections: Array<{
       {
         title: "Final de semana romântico",
         amount: 350,
+        paymentUrl: "https://www.asaas.com/c/lja6tfpj9iw4s3g3",
         image: pexels(1024960),
         imageAlt: "Paisagem serena com clima de viagem de fim de semana",
+        icon: Gift,
+      },
+      {
+        title: "Contribuição de valor livre",
+        paymentUrl: "https://www.asaas.com/c/r46edo1djdluvwes",
+        image: pexels(1796698),
+        imageAlt: "Mesa preparada para uma celebração especial",
         icon: Gift,
       },
     ],
@@ -319,17 +383,17 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
   const Icon = idea.icon;
   const pixPayload = buildPixPayload(idea);
+  const hasFixedAmount = typeof idea.amount === "number";
+  const amountText = hasFixedAmount ? currency.format(idea.amount as number) : "Valor livre";
 
   async function handleCopyItemPix() {
     setCopyStatus("idle");
-    try {
-      await navigator.clipboard.writeText(pixPayload);
+    if (await copyText(pixPayload)) {
       setCopyStatus("success");
-    } catch {
+    } else {
       setCopyStatus("error");
-    } finally {
-      setTimeout(() => setCopyStatus("idle"), 1800);
     }
+    setTimeout(() => setCopyStatus("idle"), 1800);
   }
 
   return (
@@ -366,7 +430,7 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
           <div className="mt-1 flex flex-wrap items-baseline gap-x-2">
             <span className="text-xs text-ink/55">Valor de referência</span>
             <span className="text-xl font-semibold leading-none text-gold-deep sm:text-2xl">
-              {currency.format(idea.amount)}
+              {amountText}
             </span>
           </div>
         </div>
@@ -374,8 +438,16 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
         <div className="col-span-2 grid grid-cols-2 gap-2 sm:col-span-1">
           <button
             type="button"
-            aria-label={`Copiar código PIX de ${currency.format(idea.amount)} para ${idea.title}`}
-            title={`Copiar PIX copia e cola de ${currency.format(idea.amount)}`}
+            aria-label={
+              hasFixedAmount
+                ? `Copiar código PIX de ${amountText} para ${idea.title}`
+                : `Copiar chave PIX para ${idea.title}`
+            }
+            title={
+              hasFixedAmount
+                ? `Copiar PIX copia e cola de ${amountText}`
+                : `Copiar chave PIX: ${pixKey}`
+            }
             onClick={handleCopyItemPix}
             className={`inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full border px-2 text-[0.78rem] font-semibold shadow-sm transition hover:border-gold/50 hover:bg-champagne/65 sm:h-11 sm:text-sm ${
               copyStatus === "success"
@@ -387,27 +459,15 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
             <span className="truncate">{copyStatus === "success" ? "Copiado" : "Copiar PIX"}</span>
           </button>
 
-          {cardPaymentUrl ? (
-            <a
-              href={cardPaymentUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-2 text-[0.78rem] font-semibold text-ivory shadow-md shadow-gold/20 transition hover:-translate-y-0.5 sm:h-11 sm:text-sm"
-            >
-              <CreditCard className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
-              <span className="truncate">Cartão</span>
-            </a>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="inline-flex h-10 min-w-0 cursor-not-allowed items-center justify-center gap-1.5 rounded-full bg-ink/10 px-2 text-[0.78rem] font-semibold text-ink/40 sm:h-11 sm:text-sm"
-              title="Defina NEXT_PUBLIC_CARD_PAYMENT_URL com o link do Mercado Pago"
-            >
-              <CreditCard className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
-              <span className="truncate">Cartão</span>
-            </button>
-          )}
+          <a
+            href={idea.paymentUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-2 text-[0.78rem] font-semibold text-ivory shadow-md shadow-gold/20 transition hover:-translate-y-0.5 sm:h-11 sm:text-sm"
+          >
+            <CreditCard className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
+            <span className="truncate">Cartão até 21x</span>
+          </a>
         </div>
       </div>
     </li>
@@ -426,15 +486,13 @@ export default function PresentesPage() {
 
   async function handleCopyPix() {
     setCopyStatus("idle");
-    try {
-      await navigator.clipboard.writeText(pixKey);
+    if (await copyText(pixKey)) {
       setCopyStatus("success");
-    } catch {
+    } else {
       setCopyStatus("error");
-    } finally {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => setCopyStatus("idle"), 2400);
     }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setCopyStatus("idle"), 2400);
   }
 
   return (
@@ -468,13 +526,57 @@ export default function PresentesPage() {
               As sugestões abaixo são apenas referências. Você pode contribuir via PIX ou usar o
               link de cartão quando estiver configurado.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a href="#presentes" className="btn-primary px-5 text-base">
-                Ver lista
+          </div>
+        </div>
+      </section>
+
+      <section id="pix" className="px-5 pb-10 sm:px-8 sm:pb-14">
+        <div className="mx-auto max-w-6xl rounded-[28px] border border-gold/20 bg-white/84 p-6 shadow-[0_24px_54px_-44px_rgba(0,0,0,0.34)] sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1fr_minmax(300px,430px)] lg:items-center">
+            <div>
+              <p className="text-xs uppercase tracking-[0.32em] text-gold-muted">Pix e cartão</p>
+              <h2 className="mt-3 text-3xl text-ink">Recebimento simples e prático</h2>
+              <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+                Se preferir contribuir sem escolher um presente específico, use o PIX livre ou o
+                cartão de valor livre.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              <button
+                type="button"
+                aria-label={`Copiar chave PIX ${pixKey}`}
+                onClick={handleCopyPix}
+                className={`inline-flex h-12 items-center justify-center rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 ${
+                  copyStatus === "success"
+                    ? "border-gold bg-gold text-ivory shadow-lg shadow-gold/30"
+                    : "border-gold/30 bg-ivory/90 text-gold hover:bg-champagne/70"
+                }`}
+              >
+                <Copy className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+                <span className="ml-2 flex min-w-0 flex-col items-start leading-tight">
+                  <span>Copiar PIX</span>
+                  <span className="max-w-[220px] truncate text-xs font-normal opacity-75">{pixKey}</span>
+                </span>
+              </button>
+
+              <a
+                href={freePaymentUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-4 text-sm font-semibold text-ivory shadow-lg shadow-gold/20 transition hover:-translate-y-0.5"
+              >
+                <CreditCard className="mr-2 h-4 w-4" strokeWidth={1.8} />
+                Cartão valor livre
               </a>
-              <a href="#pix" className="btn-secondary px-5 text-base">
-                PIX e cartão
-              </a>
+
+              <p className="text-sm text-ink/55">
+                {copyStatus === "success"
+                  ? "Chave Pix copiada."
+                  : copyStatus === "error"
+                    ? "Não foi possível copiar a chave Pix."
+                    : "Escolha o valor livre pelo cartão ou copie o Pix sem valor."}
+              </p>
             </div>
           </div>
         </div>
@@ -497,70 +599,6 @@ export default function PresentesPage() {
         ))}
       </section>
 
-      <section id="pix" className="px-5 pb-16 sm:px-8 sm:pb-20">
-        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[28px] border border-gold/20 bg-white/84 p-6 shadow-[0_24px_54px_-44px_rgba(0,0,0,0.34)] sm:p-8">
-            <p className="text-xs uppercase tracking-[0.32em] text-gold-muted">Pix e cartão</p>
-            <h2 className="mt-3 text-3xl text-ink">Recebimento simples e prático</h2>
-            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              O PIX é a forma mais direta de contribuir. Para cartão, o ideal é usar um link de
-              pagamento do Mercado Pago, porque ele é rápido de configurar e já suporta a
-              experiência hospedada de checkout.
-            </p>
-          </div>
-
-          <div className="rounded-[28px] border border-gold/20 bg-white/84 p-6 shadow-[0_24px_54px_-44px_rgba(0,0,0,0.34)] sm:p-8">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                aria-label={`Copiar chave PIX ${pixKey}`}
-                onClick={handleCopyPix}
-                className={`inline-flex h-12 items-center justify-center rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 ${
-                  copyStatus === "success"
-                    ? "border-gold bg-gold text-ivory shadow-lg shadow-gold/30"
-                    : "border-gold/30 bg-ivory/90 text-gold hover:bg-champagne/70"
-                }`}
-              >
-                <Copy className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-                <span className="ml-2 flex min-w-0 flex-col items-start leading-tight">
-                  <span>Copiar PIX</span>
-                  <span className="max-w-[190px] truncate text-xs font-normal opacity-75">{pixKey}</span>
-                </span>
-              </button>
-
-              {cardPaymentUrl ? (
-                <a
-                  href={cardPaymentUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-4 text-sm font-semibold text-ivory shadow-lg shadow-gold/20 transition hover:-translate-y-0.5"
-                >
-                  <CreditCard className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                  Presentear com cartão
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex h-12 cursor-not-allowed items-center justify-center rounded-full bg-ink/10 px-4 text-sm font-medium text-ink/40"
-                  title="Defina NEXT_PUBLIC_CARD_PAYMENT_URL com o link do Mercado Pago"
-                >
-                  <CreditCard className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                  Presentear com cartão
-                </button>
-              )}
-            </div>
-
-            <p className="mt-4 text-sm text-ink/55">
-              {copyStatus === "success"
-                ? "Chave Pix copiada."
-                : copyStatus === "error"
-                  ? "Não foi possível copiar a chave Pix."
-                  : "No celular, os botões ficam lado a lado e ocupam toda a largura."}
-            </p>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }
