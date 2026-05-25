@@ -1,10 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Copy, Gift } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
-import { OrnamentalDivider } from "@/components/DecorativeSvgs";
+import { motion } from "framer-motion";
+import { ArrowRight, Copy, Gift } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { OrnamentalDivider } from "@/components/DecorativeSvgs";
 
 const pixKey = "presenteie@patrikevitoria.com.br";
 
@@ -25,7 +26,7 @@ export default function Gifts() {
     try {
       await navigator.clipboard.writeText(pixKey);
       setCopyStatus("success");
-    } catch (error) {
+    } catch {
       setCopyStatus("error");
     } finally {
       if (timeoutRef.current) {
@@ -53,9 +54,20 @@ export default function Gifts() {
             Contribua com Nossa Jornada
           </h3>
           <p className="mt-3 text-xl text-ink-soft lg:mt-2 lg:text-lg lg:leading-relaxed">
-            Não temos lista de presentes, mas se você deseja nos presentear, ficaremos muito felizes
-            com sua contribuição para nossa nova vida juntos.
+            Não temos lista de presentes tradicional. Se você quiser nos presentear, sua
+            contribuição via PIX nos ajuda a escolher com carinho o que faz mais sentido para a
+            nossa nova vida juntos.
           </p>
+
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/presentes"
+              className="btn-secondary h-12 px-5 text-sm uppercase tracking-[0.22em]"
+            >
+              Ver ideias de presentes
+              <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
+            </Link>
+          </div>
 
           <div className="mt-6 w-full lg:mt-5">
             <p className="text-sm tracking-[0.2em] text-ink/60">PIX via QR Code</p>

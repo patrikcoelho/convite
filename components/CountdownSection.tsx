@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const targetDate = new Date("2026-06-11T00:00:00-03:00");
 
@@ -23,23 +23,11 @@ function getCountdown(): CountdownValues {
 
 export default function CountdownSection() {
   const [countdown, setCountdown] = useState<CountdownValues>(getCountdown());
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const timer = setInterval(() => setCountdown(getCountdown()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const values = useMemo(
-    () => [
-      { label: "Dias", value: countdown.days },
-      { label: "Horas", value: countdown.hours },
-      { label: "Min", value: countdown.minutes },
-      { label: "Seg", value: countdown.seconds },
-    ],
-    [countdown]
-  );
 
   return (
     <section id="contagem" className="section-shell px-4 py-10 sm:px-6 sm:py-14">
@@ -55,10 +43,15 @@ export default function CountdownSection() {
               Estamos contando os dias
             </h2>
             <div className="mt-10 grid gap-4 sm:grid-cols-4">
-              {values.map((item) => (
+              {[
+                { label: "Dias", value: countdown.days },
+                { label: "Horas", value: countdown.hours },
+                { label: "Min", value: countdown.minutes },
+                { label: "Seg", value: countdown.seconds },
+              ].map((item) => (
                 <div key={item.label} className="count-chip bg-white/80">
                   <div className="text-2xl font-semibold text-ink animate-number sm:text-3xl">
-                    {mounted ? item.value.toString().padStart(2, "0") : "--"}
+                    {item.value.toString().padStart(2, "0")}
                   </div>
                   <p className="mt-2 text-xs uppercase tracking-[0.3em] text-gold-muted">
                     {item.label}

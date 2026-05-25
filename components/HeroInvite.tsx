@@ -5,11 +5,6 @@ import { FloralCorner, OrnamentalDivider } from "@/components/DecorativeSvgs";
 import { Heart } from "lucide-react";
 import DateHighlight from "@/components/DateHighlight";
 
-const heroVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
-};
-
 export default function HeroInvite() {
   return (
     <section className="relative overflow-hidden px-5 pb-16 pt-6 sm:px-8 sm:pt-10">
