@@ -114,11 +114,13 @@ type GiftIdea = {
 };
 
 const sections: Array<{
+  id: string;
   title: string;
   subtitle: string;
   items: GiftIdea[];
 }> = [
   {
+    id: "casa",
     title: "Nova Casa & Vida a Dois",
     subtitle: "Sugestões para o começo do nosso lar.",
     items: [
@@ -229,6 +231,7 @@ const sections: Array<{
     ],
   },
   {
+    id: "lua-de-mel",
     title: "Lua de Mel",
     subtitle: "Experiências em Buenos Aires e Colonia del Sacramento.",
     items: [
@@ -323,6 +326,7 @@ const sections: Array<{
     ],
   },
   {
+    id: "experiencias",
     title: "Experiências do Casal",
     subtitle: "Momentos simples e especiais para a rotina a dois.",
     items: [
@@ -377,14 +381,29 @@ const sections: Array<{
   },
 ];
 
+const giftFilters = [
+  { id: "todos", label: "Todos" },
+  { id: "casa", label: "Nova casa" },
+  { id: "lua-de-mel", label: "Lua de mel" },
+  { id: "experiencias", label: "Experiências" },
+  { id: "valor-livre", label: "Valor livre" },
+] as const;
+
 function SectionCard({ idea }: { idea: GiftIdea }) {
   const [src, setSrc] = useState(idea.image);
   const [imageFailed, setImageFailed] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const Icon = idea.icon;
   const pixPayload = buildPixPayload(idea);
   const hasFixedAmount = typeof idea.amount === "number";
   const amountText = hasFixedAmount ? currency.format(idea.amount as number) : "Valor livre";
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    };
+  }, []);
 
   async function handleCopyItemPix() {
     setCopyStatus("idle");
@@ -393,7 +412,8 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
     } else {
       setCopyStatus("error");
     }
-    setTimeout(() => setCopyStatus("idle"), 1800);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+    copyTimeoutRef.current = setTimeout(() => setCopyStatus("idle"), 2600);
   }
 
   return (
@@ -456,7 +476,13 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
             }`}
           >
             <Copy className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
-            <span className="truncate">{copyStatus === "success" ? "Copiado" : "Copiar PIX"}</span>
+            <span className="truncate">
+              {copyStatus === "success"
+                ? "Copiado"
+                : hasFixedAmount
+                  ? `Pix ${amountText}`
+                  : "Pix livre"}
+            </span>
           </button>
 
           <a
@@ -469,6 +495,21 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
             <span className="truncate">Cartão até 21x</span>
           </a>
         </div>
+
+        {copyStatus !== "idle" ? (
+          <p
+            className={`col-span-2 text-sm sm:col-start-2 sm:col-end-4 ${
+              copyStatus === "success" ? "text-gold-deep" : "text-red-600/90"
+            }`}
+            role="status"
+          >
+            {copyStatus === "success"
+              ? hasFixedAmount
+                ? `Código Pix de ${amountText} copiado.`
+                : "Chave Pix livre copiada."
+              : "Não foi possível copiar o Pix."}
+          </p>
+        ) : null}
       </div>
     </li>
   );
@@ -476,7 +517,19 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
 
 export default function PresentesPage() {
   const [copyStatus, setCopyStatus] = useState<"idle" | "success" | "error">("idle");
+  const [activeFilter, setActiveFilter] = useState<(typeof giftFilters)[number]["id"]>("todos");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visibleSections =
+    activeFilter === "todos"
+      ? sections
+      : activeFilter === "valor-livre"
+        ? sections
+            .map((section) => ({
+              ...section,
+              items: section.items.filter((item) => typeof item.amount !== "number"),
+            }))
+            .filter((section) => section.items.length > 0)
+        : sections.filter((section) => section.id === activeFilter);
 
   useEffect(() => {
     return () => {
@@ -523,9 +576,33 @@ export default function PresentesPage() {
               Ideias de presentes para a nossa vida a dois
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              As sugestões abaixo são apenas referências. Você pode contribuir via PIX ou usar o
-              link de cartão quando estiver configurado.
+              As sugestões abaixo são apenas referências. Você pode escolher uma ideia, copiar o
+              Pix com o valor correspondente ou contribuir pelo cartão.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 pb-7 sm:px-8 sm:pb-9">
+        <div className="mx-auto max-w-6xl">
+          <div
+            className="flex gap-2 overflow-x-auto rounded-full border border-gold/20 bg-white/60 p-1 shadow-sm"
+            aria-label="Filtrar sugestões de presentes"
+          >
+            {giftFilters.map((filter) => (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={() => setActiveFilter(filter.id)}
+                className={`h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition ${
+                  activeFilter === filter.id
+                    ? "bg-gold text-ivory shadow-md shadow-gold/20"
+                    : "text-ink-soft hover:bg-champagne/75 hover:text-ink"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
         </div>
       </section>
@@ -534,11 +611,11 @@ export default function PresentesPage() {
         <div className="mx-auto max-w-6xl rounded-[28px] border border-gold/20 bg-white/84 p-6 shadow-[0_24px_54px_-44px_rgba(0,0,0,0.34)] sm:p-8">
           <div className="grid gap-6 lg:grid-cols-[1fr_minmax(300px,430px)] lg:items-center">
             <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-gold-muted">Pix e cartão</p>
-              <h2 className="mt-3 text-3xl text-ink">Recebimento simples e prático</h2>
+              <p className="text-xs uppercase tracking-[0.32em] text-gold-muted">Valor livre</p>
+              <h2 className="mt-3 text-3xl text-ink">Contribuição sem escolher presente</h2>
               <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-                Se preferir contribuir sem escolher um presente específico, use o PIX livre ou o
-                cartão de valor livre.
+                Se preferir não escolher uma sugestão específica, você pode enviar um Pix livre ou
+                usar o cartão com o valor que desejar.
               </p>
             </div>
 
@@ -550,13 +627,13 @@ export default function PresentesPage() {
                 className={`inline-flex h-12 items-center justify-center rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/30 ${
                   copyStatus === "success"
                     ? "border-gold bg-gold text-ivory shadow-lg shadow-gold/30"
-                    : "border-gold/30 bg-ivory/90 text-gold hover:bg-champagne/70"
+                    : "border-gold/45 bg-white text-ink hover:bg-champagne/70"
                 }`}
               >
-                <Copy className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+                <Copy className="h-4 w-4 shrink-0 text-gold-deep" strokeWidth={1.8} />
                 <span className="ml-2 flex min-w-0 flex-col items-start leading-tight">
-                  <span>Copiar PIX</span>
-                  <span className="max-w-[220px] truncate text-xs font-normal opacity-75">{pixKey}</span>
+                  <span className="text-ink">Pix - valor livre</span>
+                  <span className="max-w-[220px] truncate text-xs font-normal text-ink-soft">{pixKey}</span>
                 </span>
               </button>
 
@@ -567,7 +644,7 @@ export default function PresentesPage() {
                 className="inline-flex h-12 items-center justify-center rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-4 text-sm font-semibold text-ivory shadow-lg shadow-gold/20 transition hover:-translate-y-0.5"
               >
                 <CreditCard className="mr-2 h-4 w-4" strokeWidth={1.8} />
-                Cartão valor livre
+                Contribuir no cartão
               </a>
 
               <p className="text-sm text-ink/55">
@@ -575,7 +652,7 @@ export default function PresentesPage() {
                   ? "Chave Pix copiada."
                   : copyStatus === "error"
                     ? "Não foi possível copiar a chave Pix."
-                    : "Escolha o valor livre pelo cartão ou copie o Pix sem valor."}
+                    : "Use esta opção para presentear com qualquer valor."}
               </p>
             </div>
           </div>
@@ -583,7 +660,7 @@ export default function PresentesPage() {
       </section>
 
       <section id="presentes" className="space-y-10 px-5 pb-12 sm:px-8 sm:pb-16">
-        {sections.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.title} className="mx-auto max-w-6xl">
             <div className="mb-4 max-w-3xl">
               <p className="text-xs uppercase tracking-[0.3em] text-gold-muted">{section.title}</p>
