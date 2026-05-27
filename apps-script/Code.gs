@@ -1,6 +1,9 @@
 const CONFIG = {
   preferredSheetNames: ["Página1"],
   legacyHeaders: ["Nome", "Filhos", "Vai?", "Mensagem"],
+  optionalHeaders: {
+    adultCompanion: "Acompanhante adulto",
+  },
 };
 
 function doGet() {
@@ -61,6 +64,11 @@ function fromParameterObject(params) {
     presenca: params.presenca || params.attendance || "",
     quantidadeAcompanhantes:
       params.quantidadeAcompanhantes || params.guests || "0",
+    levaAcompanhanteAdulto:
+      params.levaAcompanhanteAdulto || params.adultCompanion || "",
+    nomeAcompanhanteAdulto:
+      params.nomeAcompanhanteAdulto || params.adultCompanionName || "",
+    nomesAcompanhantes: params.nomesAcompanhantes || "",
     mensagemAosNoivos: params.mensagemAosNoivos || params.notes || "",
   };
 }
@@ -127,14 +135,22 @@ function getHeaderValues(sheet, columnCount) {
 }
 
 function appendLegacyRow(sheet, payload) {
+  const adultCompanionName = getAdultCompanionName(payload);
+  const hasAdultCompanionColumn = hasHeader(
+    sheet,
+    CONFIG.optionalHeaders.adultCompanion
+  );
   const row = [
     payload.nomeCompleto || "",
     Number(payload.quantidadeAcompanhantes || 0),
     normalizePresence(payload.presenca),
-    payload.mensagemAosNoivos || "",
+    hasAdultCompanionColumn
+      ? payload.mensagemAosNoivos || ""
+      : buildMessage(payload.mensagemAosNoivos, adultCompanionName),
   ];
 
   appendByHeaders(sheet, CONFIG.legacyHeaders, row);
+  appendOptionalAdultCompanion(sheet, adultCompanionName);
 }
 
 function appendByHeaders(sheet, expectedHeaders, values) {
@@ -164,6 +180,50 @@ function normalizePresence(value) {
   }
 
   return value || "";
+}
+
+function getAdultCompanionName(payload) {
+  if (payload.nomeAcompanhanteAdulto) {
+    return String(payload.nomeAcompanhanteAdulto).trim();
+  }
+
+  if (Array.isArray(payload.nomesAcompanhantes) && payload.nomesAcompanhantes.length) {
+    return String(payload.nomesAcompanhantes[0] || "").trim();
+  }
+
+  return "";
+}
+
+function buildMessage(message, adultCompanionName) {
+  const normalizedMessage = String(message || "").trim();
+
+  if (!adultCompanionName) {
+    return normalizedMessage;
+  }
+
+  const companionLine = "Acompanhante adulto: " + adultCompanionName;
+
+  if (!normalizedMessage) {
+    return companionLine;
+  }
+
+  return normalizedMessage + "\n" + companionLine;
+}
+
+function appendOptionalAdultCompanion(sheet, adultCompanionName) {
+  const headers = getHeaderValues(sheet, sheet.getLastColumn());
+  const columnIndex = headers.indexOf(CONFIG.optionalHeaders.adultCompanion);
+
+  if (columnIndex === -1) {
+    return;
+  }
+
+  sheet.getRange(sheet.getLastRow(), columnIndex + 1).setValue(adultCompanionName || "");
+}
+
+function hasHeader(sheet, header) {
+  const headers = getHeaderValues(sheet, sheet.getLastColumn());
+  return headers.indexOf(header) !== -1;
 }
 
 function getSpreadsheet() {

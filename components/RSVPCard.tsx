@@ -9,6 +9,8 @@ interface FormState {
   name: string;
   guests: string;
   attendance: string;
+  adultCompanion: string;
+  adultCompanionName: string;
   notes: string;
 }
 
@@ -16,6 +18,8 @@ const initialState: FormState = {
   name: "",
   guests: "0",
   attendance: "",
+  adultCompanion: "",
+  adultCompanionName: "",
   notes: "",
 };
 
@@ -29,7 +33,14 @@ export default function RSVPCard() {
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) {
     const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "attendance" && value !== "yes"
+        ? { adultCompanion: "", adultCompanionName: "" }
+        : {}),
+      ...(name === "adultCompanion" && value !== "yes" ? { adultCompanionName: "" } : {}),
+    }));
   }
 
   async function submitRsvp() {
@@ -42,7 +53,11 @@ export default function RSVPCard() {
         nomeCompleto: formData.name.trim(),
         presenca: formData.attendance === "yes" ? "Sim" : "Não",
         quantidadeAcompanhantes: Number(formData.guests),
-        nomesAcompanhantes: [],
+        nomesAcompanhantes:
+          formData.adultCompanion === "yes" ? [formData.adultCompanionName.trim()] : [],
+        levaAcompanhanteAdulto: formData.adultCompanion === "yes" ? "Sim" : "Não",
+        nomeAcompanhanteAdulto:
+          formData.adultCompanion === "yes" ? formData.adultCompanionName.trim() : "",
         telefoneWhatsapp: "",
         restricoesAlimentares: "",
         mensagemAosNoivos: formData.notes.trim(),
@@ -69,6 +84,20 @@ export default function RSVPCard() {
 
     if (!formData.attendance) {
       setError("Selecione sua presença.");
+      return;
+    }
+
+    if (formData.attendance === "yes" && !formData.adultCompanion) {
+      setError("Informe se você levará acompanhante adulto.");
+      return;
+    }
+
+    if (
+      formData.attendance === "yes" &&
+      formData.adultCompanion === "yes" &&
+      !formData.adultCompanionName.trim()
+    ) {
+      setError("Informe o nome do acompanhante adulto.");
       return;
     }
 
@@ -182,6 +211,48 @@ export default function RSVPCard() {
                 </div>
               </label>
             </div>
+
+            {formData.attendance === "yes" ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
+                  Levará acompanhante adulto?
+                  <div className="relative mt-2">
+                    <select
+                      name="adultCompanion"
+                      value={formData.adultCompanion}
+                      onChange={handleChange}
+                      required
+                      className="input-base appearance-none pr-12"
+                      style={{
+                        color: formData.adultCompanion ? "var(--ink)" : "rgba(42, 37, 33, 0.4)",
+                      }}
+                    >
+                      <option value="">Selecione</option>
+                      <option value="yes">Sim</option>
+                      <option value="no">Não</option>
+                    </select>
+                    <ChevronDown
+                      className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold/70"
+                      strokeWidth={1.6}
+                    />
+                  </div>
+                </label>
+
+                {formData.adultCompanion === "yes" ? (
+                  <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
+                    Nome do acompanhante adulto
+                    <input
+                      name="adultCompanionName"
+                      value={formData.adultCompanionName}
+                      onChange={handleChange}
+                      required
+                      className="input-base mt-2"
+                      placeholder="Digite o nome do acompanhante"
+                    />
+                  </label>
+                ) : null}
+              </div>
+            ) : null}
 
             <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
               Deixe uma mensagem para os noivos

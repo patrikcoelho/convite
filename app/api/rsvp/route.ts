@@ -5,6 +5,8 @@ type RSVPRequestBody = {
   presenca?: string;
   quantidadeAcompanhantes?: number;
   nomesAcompanhantes?: string[];
+  levaAcompanhanteAdulto?: string;
+  nomeAcompanhanteAdulto?: string;
   telefoneWhatsapp?: string;
   restricoesAlimentares?: string;
   mensagemAosNoivos?: string;
@@ -51,6 +53,8 @@ export async function POST(request: Request) {
       presenca: body.presenca.trim(),
       quantidadeAcompanhantes: Number(body.quantidadeAcompanhantes || 0),
       nomesAcompanhantes: Array.isArray(body.nomesAcompanhantes) ? body.nomesAcompanhantes : [],
+      levaAcompanhanteAdulto: body.levaAcompanhanteAdulto?.trim() || "",
+      nomeAcompanhanteAdulto: body.nomeAcompanhanteAdulto?.trim() || "",
       telefoneWhatsapp: body.telefoneWhatsapp?.trim() || "",
       restricoesAlimentares: body.restricoesAlimentares?.trim() || "",
       mensagemAosNoivos: body.mensagemAosNoivos?.trim() || "",
