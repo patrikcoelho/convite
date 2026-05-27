@@ -161,7 +161,7 @@ export default function RSVPCard() {
               />
             </label>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-start">
               <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
                 Filhos acima de 2 anos
                 <div className="relative mt-2">
@@ -182,9 +182,6 @@ export default function RSVPCard() {
                     strokeWidth={1.6}
                   />
                 </div>
-                <p className="mt-2 text-sm text-ink/60">
-                  * Crianças até 2 anos não precisam confirmar presença.
-                </p>
               </label>
 
               <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
@@ -210,48 +207,48 @@ export default function RSVPCard() {
                   />
                 </div>
               </label>
+
+              <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
+                Levará acompanhante adulto?
+                <div className="relative mt-2">
+                  <select
+                    name="adultCompanion"
+                    value={formData.adultCompanion}
+                    onChange={handleChange}
+                    required={formData.attendance === "yes"}
+                    disabled={formData.attendance === "no"}
+                    className="input-base appearance-none pr-12 disabled:cursor-not-allowed disabled:opacity-60"
+                    style={{
+                      color: formData.adultCompanion ? "var(--ink)" : "rgba(42, 37, 33, 0.4)",
+                    }}
+                  >
+                    <option value="">Selecione</option>
+                    <option value="yes">Sim</option>
+                    <option value="no">Não</option>
+                  </select>
+                  <ChevronDown
+                    className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold/70"
+                    strokeWidth={1.6}
+                  />
+                </div>
+              </label>
             </div>
+            <p className="-mt-2 text-sm leading-relaxed text-ink/60">
+              * Crianças até 2 anos não precisam confirmar presença.
+            </p>
 
-            {formData.attendance === "yes" ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
-                  Levará acompanhante adulto?
-                  <div className="relative mt-2">
-                    <select
-                      name="adultCompanion"
-                      value={formData.adultCompanion}
-                      onChange={handleChange}
-                      required
-                      className="input-base appearance-none pr-12"
-                      style={{
-                        color: formData.adultCompanion ? "var(--ink)" : "rgba(42, 37, 33, 0.4)",
-                      }}
-                    >
-                      <option value="">Selecione</option>
-                      <option value="yes">Sim</option>
-                      <option value="no">Não</option>
-                    </select>
-                    <ChevronDown
-                      className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold/70"
-                      strokeWidth={1.6}
-                    />
-                  </div>
-                </label>
-
-                {formData.adultCompanion === "yes" ? (
-                  <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
-                    Nome do acompanhante adulto
-                    <input
-                      name="adultCompanionName"
-                      value={formData.adultCompanionName}
-                      onChange={handleChange}
-                      required
-                      className="input-base mt-2"
-                      placeholder="Digite o nome do acompanhante"
-                    />
-                  </label>
-                ) : null}
-              </div>
+            {formData.adultCompanion === "yes" ? (
+              <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
+                Nome do acompanhante adulto
+                <input
+                  name="adultCompanionName"
+                  value={formData.adultCompanionName}
+                  onChange={handleChange}
+                  required
+                  className="input-base mt-2"
+                  placeholder="Digite o nome do acompanhante"
+                />
+              </label>
             ) : null}
 
             <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
