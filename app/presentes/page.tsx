@@ -492,7 +492,7 @@ function SectionCard({ idea }: { idea: GiftIdea }) {
             className="inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-2 text-[0.78rem] font-semibold text-ivory shadow-md shadow-gold/20 transition hover:-translate-y-0.5 sm:h-11 sm:text-sm"
           >
             <CreditCard className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
-            <span className="truncate">Cartão até 21x</span>
+            <span className="truncate">Cartão até 6x</span>
           </a>
         </div>
 
