@@ -29,8 +29,13 @@ function autorizarAcessoAoDrive() {
   }
 
   var folder = DriveApp.getFolderById(folderId);
+  var testFile = folder.createFile(
+    "teste-autorizacao-drive.txt",
+    "Arquivo temporário criado para autorizar upload de fotos."
+  );
+  testFile.setTrashed(true);
 
-  return "Acesso autorizado para a pasta: " + folder.getName();
+  return "Acesso de escrita autorizado para a pasta: " + folder.getName();
 }
 
 function doPost(e) {
