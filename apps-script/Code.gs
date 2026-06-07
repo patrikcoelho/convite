@@ -1,6 +1,7 @@
-const CONFIG = {
+var CONFIG = {
   preferredSheetNames: ["Página1"],
   legacyHeaders: ["Nome", "Filhos", "Vai?", "Mensagem"],
+  photoFolderId: "",
   optionalHeaders: {
     adultCompanion: "Acompanhante adulto",
   },
@@ -16,10 +17,15 @@ function doGet() {
 
 function doPost(e) {
   try {
-    const payload = parseRequestPayload(e);
+    var payload = parseRequestPayload(e);
+
+    if (payload.action === "photoUpload") {
+      return handlePhotoUpload(payload);
+    }
+
     validatePayload(payload);
 
-    const sheet = resolveTargetSheet();
+    var sheet = resolveTargetSheet();
     appendLegacyRow(sheet, payload);
 
     return jsonResponse({
@@ -40,8 +46,8 @@ function parseRequestPayload(e) {
     throw new Error("Requisição sem corpo.");
   }
 
-  const contentType = (e.postData.type || "").toLowerCase();
-  const raw = e.postData.contents;
+  var contentType = (e.postData.type || "").toLowerCase();
+  var raw = e.postData.contents;
 
   if (contentType.indexOf("application/json") !== -1) {
     return JSON.parse(raw);
@@ -84,15 +90,15 @@ function validatePayload(payload) {
 }
 
 function resolveTargetSheet() {
-  const spreadsheet = getSpreadsheet();
-  const explicitSheetName =
+  var spreadsheet = getSpreadsheet();
+  var explicitSheetName =
     PropertiesService.getScriptProperties().getProperty("SHEET_NAME");
-  const candidates = explicitSheetName
+  var candidates = explicitSheetName
     ? [explicitSheetName]
     : CONFIG.preferredSheetNames;
 
   for (var i = 0; i < candidates.length; i++) {
-    const sheet = spreadsheet.getSheetByName(candidates[i]);
+    var sheet = spreadsheet.getSheetByName(candidates[i]);
 
     if (!sheet) {
       continue;
@@ -110,9 +116,9 @@ function resolveTargetSheet() {
 }
 
 function ensureLegacyHeaders(sheet) {
-  const headers = getHeaderValues(sheet, CONFIG.legacyHeaders.length);
+  var headers = getHeaderValues(sheet, CONFIG.legacyHeaders.length);
 
-  const matches = CONFIG.legacyHeaders.every(function(header, index) {
+  var matches = CONFIG.legacyHeaders.every(function(header, index) {
     return headers[index] === header;
   });
 
@@ -127,7 +133,7 @@ function ensureLegacyHeaders(sheet) {
 }
 
 function getHeaderValues(sheet, columnCount) {
-  const row = sheet.getRange(1, 1, 1, columnCount).getValues()[0];
+  var row = sheet.getRange(1, 1, 1, columnCount).getValues()[0];
 
   return row.map(function(value) {
     return String(value || "").trim();
@@ -135,18 +141,22 @@ function getHeaderValues(sheet, columnCount) {
 }
 
 function appendLegacyRow(sheet, payload) {
-  const adultCompanionName = getAdultCompanionName(payload);
-  const hasAdultCompanionColumn = hasHeader(
+  var adultCompanionName = getAdultCompanionName(payload);
+  var hasAdultCompanionColumn = hasHeader(
     sheet,
     CONFIG.optionalHeaders.adultCompanion
   );
-  const row = [
+  var messageValue = payload.mensagemAosNoivos || "";
+
+  if (!hasAdultCompanionColumn) {
+    messageValue = buildMessage(payload.mensagemAosNoivos, adultCompanionName);
+  }
+
+  var row = [
     payload.nomeCompleto || "",
     Number(payload.quantidadeAcompanhantes || 0),
     normalizePresence(payload.presenca),
-    hasAdultCompanionColumn
-      ? payload.mensagemAosNoivos || ""
-      : buildMessage(payload.mensagemAosNoivos, adultCompanionName),
+    messageValue,
   ];
 
   appendByHeaders(sheet, CONFIG.legacyHeaders, row);
@@ -154,11 +164,11 @@ function appendLegacyRow(sheet, payload) {
 }
 
 function appendByHeaders(sheet, expectedHeaders, values) {
-  const headers = getHeaderValues(sheet, sheet.getLastColumn());
-  const nextRow = sheet.getLastRow() + 1;
+  var headers = getHeaderValues(sheet, sheet.getLastColumn());
+  var nextRow = sheet.getLastRow() + 1;
 
   expectedHeaders.forEach(function(header, index) {
-    const columnIndex = headers.indexOf(header);
+    var columnIndex = headers.indexOf(header);
 
     if (columnIndex === -1) {
       throw new Error('Coluna obrigatória não encontrada: "' + header + '".');
@@ -169,7 +179,7 @@ function appendByHeaders(sheet, expectedHeaders, values) {
 }
 
 function normalizePresence(value) {
-  const normalized = String(value || "").trim().toLowerCase();
+  var normalized = String(value || "").trim().toLowerCase();
 
   if (normalized === "sim" || normalized === "yes") {
     return "yes";
@@ -195,13 +205,13 @@ function getAdultCompanionName(payload) {
 }
 
 function buildMessage(message, adultCompanionName) {
-  const normalizedMessage = String(message || "").trim();
+  var normalizedMessage = String(message || "").trim();
 
   if (!adultCompanionName) {
     return normalizedMessage;
   }
 
-  const companionLine = "Acompanhante adulto: " + adultCompanionName;
+  var companionLine = "Acompanhante adulto: " + adultCompanionName;
 
   if (!normalizedMessage) {
     return companionLine;
@@ -211,8 +221,8 @@ function buildMessage(message, adultCompanionName) {
 }
 
 function appendOptionalAdultCompanion(sheet, adultCompanionName) {
-  const headers = getHeaderValues(sheet, sheet.getLastColumn());
-  const columnIndex = headers.indexOf(CONFIG.optionalHeaders.adultCompanion);
+  var headers = getHeaderValues(sheet, sheet.getLastColumn());
+  var columnIndex = headers.indexOf(CONFIG.optionalHeaders.adultCompanion);
 
   if (columnIndex === -1) {
     return;
@@ -222,12 +232,12 @@ function appendOptionalAdultCompanion(sheet, adultCompanionName) {
 }
 
 function hasHeader(sheet, header) {
-  const headers = getHeaderValues(sheet, sheet.getLastColumn());
+  var headers = getHeaderValues(sheet, sheet.getLastColumn());
   return headers.indexOf(header) !== -1;
 }
 
 function getSpreadsheet() {
-  const spreadsheetId = PropertiesService.getScriptProperties().getProperty(
+  var spreadsheetId = PropertiesService.getScriptProperties().getProperty(
     "SPREADSHEET_ID"
   );
 
@@ -235,7 +245,7 @@ function getSpreadsheet() {
     return SpreadsheetApp.openById(spreadsheetId);
   }
 
-  const activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
 
   if (!activeSpreadsheet) {
     throw new Error(
@@ -250,4 +260,94 @@ function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(
     ContentService.MimeType.JSON
   );
+}
+
+function handlePhotoUpload(payload) {
+  var folderId = CONFIG.photoFolderId;
+
+  if (!folderId) {
+    folderId = PropertiesService.getScriptProperties().getProperty(
+      "PHOTO_FOLDER_ID"
+    );
+  }
+
+  if (!folderId) {
+    throw new Error("ID da pasta de fotos não configurado no Code.gs.");
+  }
+
+  if (!payload.photos || !Array.isArray(payload.photos) || !payload.photos.length) {
+    throw new Error("Nenhuma foto recebida.");
+  }
+
+  var folder = DriveApp.getFolderById(folderId);
+  var guestName = sanitizeFilePart(payload.guestName || "convidado");
+  var savedFiles = [];
+
+  for (var i = 0; i < payload.photos.length; i++) {
+    var photo = payload.photos[i];
+
+    if (!photo || !photo.data || !photo.mimeType) {
+      continue;
+    }
+
+    if (String(photo.mimeType).indexOf("image/") !== 0) {
+      continue;
+    }
+
+    var bytes = Utilities.base64Decode(photo.data);
+    var extension = extensionFromMimeType(photo.mimeType);
+    var originalName = sanitizeFilePart(photo.fileName || "foto");
+    var timestamp = Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      "yyyyMMdd-HHmmss"
+    );
+    var fileName =
+      timestamp + "-" + guestName + "-" + (i + 1) + "-" + originalName;
+
+    if (fileName.toLowerCase().lastIndexOf(extension) !== fileName.length - extension.length) {
+      fileName += extension;
+    }
+
+    var blob = Utilities.newBlob(bytes, photo.mimeType, fileName);
+    var file = folder.createFile(blob);
+
+    savedFiles.push({
+      id: file.getId(),
+      name: file.getName(),
+      url: file.getUrl(),
+    });
+  }
+
+  if (!savedFiles.length) {
+    throw new Error("Nenhuma foto válida foi salva.");
+  }
+
+  return jsonResponse({
+    ok: true,
+    message: "Fotos salvas com sucesso.",
+    count: savedFiles.length,
+    files: savedFiles,
+  });
+}
+
+function sanitizeFilePart(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[^\wÀ-ÿ.-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .substring(0, 60) || "foto";
+}
+
+function extensionFromMimeType(mimeType) {
+  if (mimeType === "image/png") {
+    return ".png";
+  }
+
+  if (mimeType === "image/webp") {
+    return ".webp";
+  }
+
+  return ".jpg";
 }

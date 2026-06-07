@@ -62,6 +62,31 @@ Os campos enviados para o Apps Script sao:
 - `restricoesAlimentares`
 - `mensagemAosNoivos`
 
+## Upload de fotos para Google Drive
+
+O fluxo de fotos funciona assim:
+
+1. O convidado acessa `/fotos`
+2. Seleciona fotos no celular
+3. O navegador reduz as imagens antes do envio
+4. A rota `POST /api/photos` encaminha os arquivos para o Apps Script
+5. O Apps Script salva as fotos em uma pasta do Google Drive
+
+### Configuracao da pasta de fotos
+
+1. Crie uma pasta no Google Drive para receber as fotos
+2. Abra a pasta e copie o ID da URL
+3. No arquivo `apps-script/Code.gs`, cole o ID na propriedade `photoFolderId`:
+
+```js
+var CONFIG = {
+  photoFolderId: "ID_DA_PASTA_DO_GOOGLE_DRIVE",
+  // demais configuracoes...
+};
+```
+
+O Apps Script tambem precisa estar atualizado com o conteudo de `apps-script/Code.gs` e publicado como Web App.
+
 ## Observacoes
 
 - O endpoint do Apps Script agora fica no servidor do Next, entao o navegador nao precisa chamar o Google diretamente.
