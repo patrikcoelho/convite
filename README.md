@@ -62,32 +62,32 @@ Os campos enviados para o Apps Script sao:
 - `restricoesAlimentares`
 - `mensagemAosNoivos`
 
-## Upload de fotos para Google Drive
+## Upload de fotos para Supabase Storage
 
 O fluxo de fotos funciona assim:
 
 1. O convidado acessa `/fotos`
 2. Seleciona fotos no celular
 3. O navegador reduz as imagens antes do envio
-4. A rota `POST /api/photos` encaminha os arquivos para o Apps Script
-5. O Apps Script salva as fotos em uma pasta do Google Drive
+4. A rota `POST /api/photos` recebe os arquivos no servidor
+5. O servidor salva as fotos no bucket privado do Supabase Storage
 
-### Configuracao da pasta de fotos
+### Configuracao do Supabase
 
-1. Crie uma pasta no Google Drive para receber as fotos
-2. Abra a pasta e copie o ID da URL
-3. No arquivo `apps-script/Code.gs`, cole o ID na propriedade `photoFolderId`:
+1. Crie um bucket no Supabase Storage, por exemplo `wedding-photos`
+2. Mantenha o bucket como privado
+3. Configure estas variaveis no `.env.local` e no deploy:
 
-```js
-var CONFIG = {
-  photoFolderId: "ID_DA_PASTA_DO_GOOGLE_DRIVE",
-  // demais configuracoes...
-};
+```bash
+SUPABASE_URL=https://SEU_PROJETO.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=SUA_SERVICE_ROLE_KEY
+SUPABASE_PHOTOS_BUCKET=wedding-photos
 ```
 
-O Apps Script tambem precisa estar atualizado com o conteudo de `apps-script/Code.gs` e publicado como Web App.
+A `SUPABASE_SERVICE_ROLE_KEY` e um segredo de servidor. Nunca exponha essa chave no frontend e nunca commite em arquivos do repositorio.
 
 ## Observacoes
 
-- O endpoint do Apps Script agora fica no servidor do Next, entao o navegador nao precisa chamar o Google diretamente.
-- Isso reduz problemas de CORS e evita expor a URL do Web App no bundle do cliente.
+- O endpoint do Apps Script do RSVP fica no servidor do Next, entao o navegador nao precisa chamar o Google diretamente.
+- Isso reduz problemas de CORS e evita expor a URL do Web App de RSVP no bundle do cliente.
+- O upload de fotos nao usa login do convidado. A permissao de escrita no bucket fica restrita ao servidor por meio da `SUPABASE_SERVICE_ROLE_KEY`.

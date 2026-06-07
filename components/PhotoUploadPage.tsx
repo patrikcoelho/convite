@@ -6,7 +6,7 @@ import { useMemo, useRef, useState } from "react";
 import { FloralCorner, OrnamentalDivider } from "@/components/DecorativeSvgs";
 
 const MAX_FILES = 20;
-const UPLOAD_BATCH_SIZE = 4;
+const UPLOAD_BATCH_SIZE = 2;
 const MAX_DIMENSION = 1400;
 const JPEG_QUALITY = 0.74;
 
@@ -16,6 +16,11 @@ type SelectedPhoto = {
   id: string;
   file: File;
   previewUrl: string;
+};
+
+type PreparedPhoto = {
+  id: string;
+  file: File;
 };
 
 export default function PhotoUploadPage() {
@@ -85,12 +90,17 @@ export default function PhotoUploadPage() {
     setStatus("sending");
     setMessage("Preparando as fotos...");
 
+    const sentPhotoIds: string[] = [];
+
     try {
-      const compressedPhotos: File[] = [];
+      const compressedPhotos: PreparedPhoto[] = [];
 
       for (let index = 0; index < photos.length; index += 1) {
         setMessage(`Preparando foto ${index + 1} de ${photos.length}...`);
-        compressedPhotos.push(await compressImage(photos[index].file));
+        compressedPhotos.push({
+          id: photos[index].id,
+          file: await compressImage(photos[index].file),
+        });
       }
 
       let sentCount = 0;
@@ -101,7 +111,7 @@ export default function PhotoUploadPage() {
         formData.append("guestName", guestName.trim());
 
         batch.forEach((photo) => {
-          formData.append("photos", photo, photo.name);
+          formData.append("photos", photo.file, photo.file.name);
         });
 
         setMessage(
@@ -125,6 +135,8 @@ export default function PhotoUploadPage() {
         }
 
         sentCount += data.count || batch.length;
+        sentPhotoIds.push(...batch.map((photo) => photo.id));
+        removeUploadedPhotos(sentPhotoIds);
       }
 
       photos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
@@ -135,8 +147,30 @@ export default function PhotoUploadPage() {
     } catch (error) {
       console.error(error);
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Não foi possível enviar as fotos.");
+      const remainingCount = photos.length - sentPhotoIds.length;
+      const errorMessage =
+        error instanceof Error ? error.message : "Não foi possível enviar as fotos.";
+
+      setMessage(
+        remainingCount
+          ? `${errorMessage} As fotos já enviadas foram removidas da lista. Toque em Enviar fotos para tentar enviar as restantes.`
+          : errorMessage
+      );
     }
+  }
+
+  function removeUploadedPhotos(uploadedIds: string[]) {
+    setPhotos((current) => {
+      const uploadedIdSet = new Set(uploadedIds);
+
+      current.forEach((photo) => {
+        if (uploadedIdSet.has(photo.id)) {
+          URL.revokeObjectURL(photo.previewUrl);
+        }
+      });
+
+      return current.filter((photo) => !uploadedIdSet.has(photo.id));
+    });
   }
 
   return (

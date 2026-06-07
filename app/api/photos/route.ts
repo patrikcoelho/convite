@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 
 const MAX_FILES = 4;
@@ -6,19 +7,25 @@ const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 type UploadedPhoto = {
   fileName: string;
-  mimeType: string;
-  data: string;
+  path: string;
+};
+
+type SupabaseError = {
+  message?: string;
+  error?: string;
 };
 
 export async function POST(request: Request) {
   try {
-    const endpoint = process.env.APPS_SCRIPT_URL || process.env.NEXT_PUBLIC_APPS_SCRIPT_URL;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const bucket = process.env.SUPABASE_PHOTOS_BUCKET || "wedding-photos";
 
-    if (!endpoint) {
+    if (!supabaseUrl || !serviceRoleKey || !bucket) {
       return NextResponse.json(
         {
           ok: false,
-          message: "APPS_SCRIPT_URL não configurada.",
+          message: "Configuração do Supabase incompleta.",
         },
         { status: 500 }
       );
@@ -50,7 +57,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const photos: UploadedPhoto[] = [];
+    const uploadedPhotos: UploadedPhoto[] = [];
 
     for (const file of files) {
       if (!ALLOWED_TYPES.has(file.type)) {
@@ -73,68 +80,26 @@ export async function POST(request: Request) {
         );
       }
 
-      const bytes = Buffer.from(await file.arrayBuffer());
-
-      photos.push({
-        fileName: file.name,
-        mimeType: file.type,
-        data: bytes.toString("base64"),
+      const objectPath = buildObjectPath(file.name, guestName);
+      await uploadToSupabase({
+        supabaseUrl,
+        serviceRoleKey,
+        bucket,
+        objectPath,
+        file,
       });
-    }
 
-    const upstreamResponse = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "photoUpload",
-        guestName,
-        photos,
-      }),
-      cache: "no-store",
-    });
-
-    const rawText = await upstreamResponse.text();
-    const upstreamData = safeParseJson(rawText);
-
-    if (!upstreamResponse.ok) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message:
-            upstreamData?.message ||
-            rawText.slice(0, 180) ||
-            "Falha ao enviar fotos para o Apps Script.",
-        },
-        { status: 502 }
-      );
-    }
-
-    if (upstreamData && upstreamData.ok === false) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: upstreamData.message || "Apps Script recusou o envio das fotos.",
-        },
-        { status: 400 }
-      );
-    }
-
-    if (!upstreamData) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: rawText.slice(0, 180) || "Resposta inválida do Apps Script.",
-        },
-        { status: 502 }
-      );
+      uploadedPhotos.push({
+        fileName: file.name,
+        path: objectPath,
+      });
     }
 
     return NextResponse.json({
       ok: true,
-      message: upstreamData?.message || "Fotos enviadas com sucesso.",
-      count: upstreamData?.count || photos.length,
+      message: `${uploadedPhotos.length} foto(s) enviadas com sucesso.`,
+      count: uploadedPhotos.length,
+      files: uploadedPhotos,
     });
   } catch (error) {
     console.error("Photo upload API error", error);
@@ -142,16 +107,89 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        message: "Não foi possível enviar as fotos agora.",
+        message: error instanceof Error ? error.message : "Não foi possível enviar as fotos agora.",
       },
       { status: 500 }
     );
   }
 }
 
+async function uploadToSupabase({
+  supabaseUrl,
+  serviceRoleKey,
+  bucket,
+  objectPath,
+  file,
+}: {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  bucket: string;
+  objectPath: string;
+  file: File;
+}) {
+  const uploadUrl = `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${encodePath(
+    bucket
+  )}/${encodePath(objectPath)}`;
+
+  const response = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${serviceRoleKey}`,
+      apikey: serviceRoleKey,
+      "Content-Type": file.type,
+      "x-upsert": "false",
+    },
+    body: Buffer.from(await file.arrayBuffer()),
+    cache: "no-store",
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  const rawText = await response.text();
+  const data = safeParseJson(rawText);
+  const message =
+    data?.message ||
+    data?.error ||
+    rawText.slice(0, 180) ||
+    "Falha ao salvar foto no Supabase.";
+
+  throw new Error(message);
+}
+
+function buildObjectPath(fileName: string, guestName: string) {
+  const date = new Date().toISOString().slice(0, 10);
+  const guestFolder = slugify(guestName) || "convidado";
+  const extension = getExtension(fileName);
+  const safeFileName = slugify(fileName.replace(/\.[^.]+$/, "")) || "foto";
+
+  return `${date}/${guestFolder}/${Date.now()}-${randomUUID()}-${safeFileName}${extension}`;
+}
+
+function getExtension(fileName: string) {
+  const extension = fileName.match(/\.[a-z0-9]+$/i)?.[0]?.toLowerCase();
+
+  return extension || ".jpg";
+}
+
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+
+function encodePath(value: string) {
+  return value.split("/").map(encodeURIComponent).join("/");
+}
+
 function safeParseJson(value: string) {
   try {
-    return JSON.parse(value) as { ok?: boolean; message?: string; count?: number };
+    return JSON.parse(value) as SupabaseError;
   } catch {
     return null;
   }
