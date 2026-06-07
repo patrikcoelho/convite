@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const MAX_FILES = 20;
+const MAX_FILES = 4;
 const MAX_FILE_SIZE = 3 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -102,7 +102,10 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           ok: false,
-          message: upstreamData?.message || "Falha ao enviar fotos para o Apps Script.",
+          message:
+            upstreamData?.message ||
+            rawText.slice(0, 180) ||
+            "Falha ao enviar fotos para o Apps Script.",
         },
         { status: 502 }
       );
@@ -115,6 +118,16 @@ export async function POST(request: Request) {
           message: upstreamData.message || "Apps Script recusou o envio das fotos.",
         },
         { status: 400 }
+      );
+    }
+
+    if (!upstreamData) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: rawText.slice(0, 180) || "Resposta inválida do Apps Script.",
+        },
+        { status: 502 }
       );
     }
 

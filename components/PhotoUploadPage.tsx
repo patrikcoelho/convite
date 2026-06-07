@@ -6,8 +6,9 @@ import { useMemo, useRef, useState } from "react";
 import { FloralCorner, OrnamentalDivider } from "@/components/DecorativeSvgs";
 
 const MAX_FILES = 20;
-const MAX_DIMENSION = 1800;
-const JPEG_QUALITY = 0.82;
+const UPLOAD_BATCH_SIZE = 4;
+const MAX_DIMENSION = 1400;
+const JPEG_QUALITY = 0.74;
 
 type UploadStatus = "idle" | "sending" | "success" | "error";
 
@@ -85,34 +86,52 @@ export default function PhotoUploadPage() {
     setMessage("Preparando as fotos...");
 
     try {
-      const formData = new FormData();
-      formData.append("guestName", guestName.trim());
+      const compressedPhotos: File[] = [];
 
-      for (const photo of photos) {
-        const compressed = await compressImage(photo.file);
-        formData.append("photos", compressed, compressed.name);
+      for (let index = 0; index < photos.length; index += 1) {
+        setMessage(`Preparando foto ${index + 1} de ${photos.length}...`);
+        compressedPhotos.push(await compressImage(photos[index].file));
       }
 
-      setMessage("Enviando para os noivos...");
+      let sentCount = 0;
 
-      const response = await fetch("/api/photos", {
-        method: "POST",
-        body: formData,
-      });
+      for (let index = 0; index < compressedPhotos.length; index += UPLOAD_BATCH_SIZE) {
+        const batch = compressedPhotos.slice(index, index + UPLOAD_BATCH_SIZE);
+        const formData = new FormData();
+        formData.append("guestName", guestName.trim());
 
-      const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; message?: string; count?: number }
-        | null;
+        batch.forEach((photo) => {
+          formData.append("photos", photo, photo.name);
+        });
 
-      if (!response.ok || !data?.ok) {
-        throw new Error(data?.message || "Falha ao enviar fotos.");
+        setMessage(
+          `Enviando fotos ${index + 1} a ${Math.min(
+            index + batch.length,
+            compressedPhotos.length
+          )} de ${compressedPhotos.length}...`
+        );
+
+        const response = await fetch("/api/photos", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = (await response.json().catch(() => null)) as
+          | { ok?: boolean; message?: string; count?: number }
+          | null;
+
+        if (!response.ok || !data?.ok) {
+          throw new Error(data?.message || "Falha ao enviar fotos.");
+        }
+
+        sentCount += data.count || batch.length;
       }
 
       photos.forEach((photo) => URL.revokeObjectURL(photo.previewUrl));
       setPhotos([]);
       setGuestName("");
       setStatus("success");
-      setMessage(`${data.count || "Suas"} foto(s) foram enviadas com sucesso.`);
+      setMessage(`${sentCount} foto(s) foram enviadas com sucesso.`);
     } catch (error) {
       console.error(error);
       setStatus("error");
