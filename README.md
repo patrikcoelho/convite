@@ -71,6 +71,7 @@ O fluxo de fotos funciona assim:
 3. O navegador reduz as imagens antes do envio
 4. A rota `POST /api/photos` recebe os arquivos no servidor
 5. O servidor salva as fotos no bucket privado do Supabase Storage
+6. A rota `GET /api/photos/sync-to-drive` copia periodicamente as fotos do Supabase para o Google Drive via Apps Script
 
 ### Configuracao do Supabase
 
@@ -85,6 +86,31 @@ SUPABASE_PHOTOS_BUCKET=wedding-photos
 ```
 
 A `SUPABASE_SERVICE_ROLE_KEY` e um segredo de servidor. Nunca exponha essa chave no frontend e nunca commite em arquivos do repositorio.
+
+### Sincronizacao das fotos com Google Drive
+
+A sincronizacao para o Drive usa o mesmo Web App do Apps Script configurado para o RSVP, mas chamando a acao `photoUpload`.
+
+Configure tambem:
+
+```bash
+APPS_SCRIPT_URL=https://script.google.com/macros/s/SEU_ID/exec
+CRON_SECRET=UM_SEGREDO_FORTE
+```
+
+Opcionalmente, ajuste quantas fotos sao copiadas por execucao:
+
+```bash
+PHOTOS_DRIVE_SYNC_BATCH_SIZE=2
+```
+
+O projeto inclui um `vercel.json` para executar `/api/photos/sync-to-drive` a cada 5 minutos. A rota tambem pode ser chamada manualmente com:
+
+```bash
+curl -H "Authorization: Bearer SEU_CRON_SECRET" https://SEU_DOMINIO/api/photos/sync-to-drive
+```
+
+Para evitar duplicidade no Drive, a sincronizacao grava o manifesto privado `.sync/drive-manifest.json` dentro do bucket.
 
 ## Observacoes
 

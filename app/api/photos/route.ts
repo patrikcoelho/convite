@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { getSupabaseStorageConfig, uploadSupabaseObject } from "@/lib/supabase-storage";
 
 const MAX_FILES = 4;
 const MAX_FILE_SIZE = 3 * 1024 * 1024;
@@ -10,18 +11,11 @@ type UploadedPhoto = {
   path: string;
 };
 
-type SupabaseError = {
-  message?: string;
-  error?: string;
-};
-
 export async function POST(request: Request) {
   try {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const bucket = process.env.SUPABASE_PHOTOS_BUCKET || "wedding-photos";
+    const supabaseConfig = getSupabaseStorageConfig();
 
-    if (!supabaseUrl || !serviceRoleKey || !bucket) {
+    if (!supabaseConfig) {
       return NextResponse.json(
         {
           ok: false,
@@ -81,12 +75,11 @@ export async function POST(request: Request) {
       }
 
       const objectPath = buildObjectPath(file.name, guestName);
-      await uploadToSupabase({
-        supabaseUrl,
-        serviceRoleKey,
-        bucket,
+      await uploadSupabaseObject({
+        config: supabaseConfig,
         objectPath,
-        file,
+        body: Buffer.from(await file.arrayBuffer()),
+        contentType: file.type,
       });
 
       uploadedPhotos.push({
@@ -114,50 +107,6 @@ export async function POST(request: Request) {
   }
 }
 
-async function uploadToSupabase({
-  supabaseUrl,
-  serviceRoleKey,
-  bucket,
-  objectPath,
-  file,
-}: {
-  supabaseUrl: string;
-  serviceRoleKey: string;
-  bucket: string;
-  objectPath: string;
-  file: File;
-}) {
-  const uploadUrl = `${supabaseUrl.replace(/\/$/, "")}/storage/v1/object/${encodePath(
-    bucket
-  )}/${encodePath(objectPath)}`;
-
-  const response = await fetch(uploadUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${serviceRoleKey}`,
-      apikey: serviceRoleKey,
-      "Content-Type": file.type,
-      "x-upsert": "false",
-    },
-    body: Buffer.from(await file.arrayBuffer()),
-    cache: "no-store",
-  });
-
-  if (response.ok) {
-    return;
-  }
-
-  const rawText = await response.text();
-  const data = safeParseJson(rawText);
-  const message =
-    data?.message ||
-    data?.error ||
-    rawText.slice(0, 180) ||
-    "Falha ao salvar foto no Supabase.";
-
-  throw new Error(message);
-}
-
 function buildObjectPath(fileName: string, guestName: string) {
   const date = new Date().toISOString().slice(0, 10);
   const guestFolder = slugify(guestName) || "convidado";
@@ -181,16 +130,4 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
-}
-
-function encodePath(value: string) {
-  return value.split("/").map(encodeURIComponent).join("/");
-}
-
-function safeParseJson(value: string) {
-  try {
-    return JSON.parse(value) as SupabaseError;
-  } catch {
-    return null;
-  }
 }

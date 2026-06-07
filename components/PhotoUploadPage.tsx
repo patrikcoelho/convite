@@ -5,7 +5,6 @@ import { Camera, CheckCircle, ImagePlus, Loader2, Upload, X } from "lucide-react
 import { useMemo, useRef, useState } from "react";
 import { FloralCorner, OrnamentalDivider } from "@/components/DecorativeSvgs";
 
-const MAX_FILES = 20;
 const UPLOAD_BATCH_SIZE = 2;
 const MAX_DIMENSION = 1400;
 const JPEG_QUALITY = 0.74;
@@ -49,16 +48,11 @@ export default function PhotoUploadPage() {
     setMessage("");
 
     setPhotos((current) => {
-      const remainingSlots = Math.max(MAX_FILES - current.length, 0);
-      const nextFiles = files.slice(0, remainingSlots).map((file) => ({
+      const nextFiles = files.map((file) => ({
         id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
         file,
         previewUrl: URL.createObjectURL(file),
       }));
-
-      if (files.length > remainingSlots) {
-        setMessage(`Você pode enviar até ${MAX_FILES} fotos por vez.`);
-      }
 
       return [...current, ...nextFiles];
     });
@@ -96,7 +90,6 @@ export default function PhotoUploadPage() {
       const compressedPhotos: PreparedPhoto[] = [];
 
       for (let index = 0; index < photos.length; index += 1) {
-        setMessage(`Preparando foto ${index + 1} de ${photos.length}...`);
         compressedPhotos.push({
           id: photos[index].id,
           file: await compressImage(photos[index].file),
@@ -104,6 +97,7 @@ export default function PhotoUploadPage() {
       }
 
       let sentCount = 0;
+      setMessage("Enviando suas fotos...");
 
       for (let index = 0; index < compressedPhotos.length; index += UPLOAD_BATCH_SIZE) {
         const batch = compressedPhotos.slice(index, index + UPLOAD_BATCH_SIZE);
@@ -113,13 +107,6 @@ export default function PhotoUploadPage() {
         batch.forEach((photo) => {
           formData.append("photos", photo.file, photo.file.name);
         });
-
-        setMessage(
-          `Enviando fotos ${index + 1} a ${Math.min(
-            index + batch.length,
-            compressedPhotos.length
-          )} de ${compressedPhotos.length}...`
-        );
 
         const response = await fetch("/api/photos", {
           method: "POST",
@@ -236,7 +223,7 @@ export default function PhotoUploadPage() {
                 </span>
                 <span className="mt-5 text-3xl font-semibold text-ink">Selecionar fotos</span>
                 <span className="mt-2 max-w-sm text-base leading-relaxed text-ink-soft">
-                  Toque aqui para escolher até {MAX_FILES} fotos da sua galeria.
+                  Toque aqui para escolher as fotos da sua galeria.
                 </span>
               </button>
             </div>
