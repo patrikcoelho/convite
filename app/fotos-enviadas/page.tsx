@@ -1,6 +1,6 @@
 import { Camera, Download, ImageOff } from "lucide-react";
 import { FloralCorner, OrnamentalDivider } from "@/components/DecorativeSvgs";
-import { getPhotoOwner, isGalleryAuthorized, listGalleryPhotos } from "@/lib/photo-gallery";
+import { isGalleryAuthorized, listGalleryPhotos } from "@/lib/photo-gallery";
 
 type PhotosPageProps = {
   searchParams: Promise<{
@@ -67,7 +67,7 @@ export default async function SentPhotosPage({ searchParams }: PhotosPageProps) 
               </div>
 
               {photos.length ? (
-                <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
                   {photos.map((photo) => {
                     const fileQuery = new URLSearchParams({
                       path: photo.path,
@@ -77,7 +77,7 @@ export default async function SentPhotosPage({ searchParams }: PhotosPageProps) 
                     return (
                       <li
                         key={photo.path}
-                        className="group overflow-hidden rounded-3xl border border-gold/20 bg-white/75 shadow-[0_18px_44px_-36px_rgba(0,0,0,0.35)]"
+                        className="group overflow-hidden rounded-xl border border-gold/20 bg-white/75 shadow-[0_16px_34px_-32px_rgba(0,0,0,0.35)] sm:rounded-2xl"
                       >
                         <a
                           href={`/api/photos/file?${fileQuery}`}
@@ -93,18 +93,6 @@ export default async function SentPhotosPage({ searchParams }: PhotosPageProps) 
                             loading="lazy"
                           />
                         </a>
-                        <div className="space-y-2 px-4 py-3">
-                          <p className="truncate text-base font-semibold capitalize text-ink">
-                            {getPhotoOwner(photo.path)}
-                          </p>
-                          <a
-                            href={`/api/photos/file?${fileQuery}`}
-                            download
-                            className="inline-flex text-sm font-semibold text-gold-deep hover:text-ink"
-                          >
-                            Baixar foto
-                          </a>
-                        </div>
                       </li>
                     );
                   })}

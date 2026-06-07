@@ -161,7 +161,7 @@ export default function PhotoUploadPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-5 py-8 sm:px-8 sm:py-12">
+    <main className="relative min-h-screen overflow-hidden px-5 pb-32 pt-8 sm:px-8 sm:py-12">
       <div className="pointer-events-none absolute inset-0 opacity-70">
         <FloralCorner className="absolute -left-12 -top-8" />
         <FloralCorner className="absolute -bottom-10 -right-12 rotate-180" />
@@ -280,22 +280,39 @@ export default function PhotoUploadPage() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-primary hidden w-full disabled:cursor-not-allowed disabled:opacity-60 sm:inline-flex"
             >
-              {status === "sending" ? (
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" strokeWidth={1.7} />
-              ) : status === "success" ? (
-                <CheckCircle className="mr-2 h-5 w-5" strokeWidth={1.7} />
-              ) : (
-                <Upload className="mr-2 h-5 w-5" strokeWidth={1.7} />
-              )}
+              <SubmitIcon status={status} />
               {status === "sending" ? "Enviando..." : "Enviar fotos"}
             </button>
+
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gold/20 bg-ivory/92 px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-3 shadow-[0_-18px_38px_-32px_rgba(0,0,0,0.45)] backdrop-blur-md sm:hidden">
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <SubmitIcon status={status} />
+                {status === "sending" ? "Enviando..." : "Enviar fotos"}
+              </button>
+            </div>
           </form>
         </div>
       </motion.section>
     </main>
   );
+}
+
+function SubmitIcon({ status }: { status: UploadStatus }) {
+  if (status === "sending") {
+    return <Loader2 className="mr-2 h-5 w-5 animate-spin" strokeWidth={1.7} />;
+  }
+
+  if (status === "success") {
+    return <CheckCircle className="mr-2 h-5 w-5" strokeWidth={1.7} />;
+  }
+
+  return <Upload className="mr-2 h-5 w-5" strokeWidth={1.7} />;
 }
 
 async function compressImage(file: File) {
