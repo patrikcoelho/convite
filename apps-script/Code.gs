@@ -15,6 +15,24 @@ function doGet() {
   });
 }
 
+function autorizarAcessoAoDrive() {
+  var folderId = CONFIG.photoFolderId;
+
+  if (!folderId) {
+    folderId = PropertiesService.getScriptProperties().getProperty(
+      "PHOTO_FOLDER_ID"
+    );
+  }
+
+  if (!folderId) {
+    throw new Error("Configure CONFIG.photoFolderId com o ID da pasta de fotos.");
+  }
+
+  var folder = DriveApp.getFolderById(folderId);
+
+  return "Acesso autorizado para a pasta: " + folder.getName();
+}
+
 function doPost(e) {
   try {
     var payload = parseRequestPayload(e);
