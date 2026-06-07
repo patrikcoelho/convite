@@ -12,6 +12,8 @@ const MANIFEST_PATH = ".sync/drive-manifest.json";
 const DEFAULT_BATCH_SIZE = 2;
 const MAX_BATCH_SIZE = 4;
 
+export const dynamic = "force-dynamic";
+
 type DriveSyncManifest = {
   version: number;
   updatedAt: string;

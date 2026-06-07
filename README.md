@@ -104,7 +104,7 @@ Opcionalmente, ajuste quantas fotos sao copiadas por execucao:
 PHOTOS_DRIVE_SYNC_BATCH_SIZE=2
 ```
 
-O projeto inclui um `vercel.json` para executar `/api/photos/sync-to-drive` a cada 5 minutos. A rota tambem pode ser chamada manualmente com:
+O projeto inclui um `vercel.json` para executar `/api/photos/sync-to-drive` uma vez por dia. A rota tambem pode ser chamada manualmente com:
 
 ```bash
 curl -H "Authorization: Bearer SEU_CRON_SECRET" https://SEU_DOMINIO/api/photos/sync-to-drive
