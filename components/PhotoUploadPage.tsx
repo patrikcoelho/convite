@@ -5,7 +5,7 @@ import { Camera, CheckCircle, ImagePlus, Loader2, Upload, X } from "lucide-react
 import { useMemo, useRef, useState } from "react";
 import { FloralCorner, OrnamentalDivider } from "@/components/DecorativeSvgs";
 
-const MAX_FILES = 10;
+const MAX_FILES = 20;
 const MAX_DIMENSION = 1800;
 const JPEG_QUALITY = 0.82;
 
@@ -146,20 +146,22 @@ export default function PhotoUploadPage() {
               Compartilhe seus registros com a gente
             </h1>
             <p className="mx-auto mt-3 max-w-xl text-lg leading-relaxed text-ink-soft">
-              Selecione as fotos da sua galeria e envie direto para os noivos. Não precisa fazer
-              login.
+              Selecione as fotos da sua galeria e envie direto para os noivos.
             </p>
           </div>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <label className="block text-base font-medium tracking-[0.08em] text-ink/70">
-              Seu nome (opcional)
+              Nome para identificar as fotos (opcional)
               <input
                 value={guestName}
                 onChange={(event) => setGuestName(event.target.value)}
-                className="input-base mt-2"
+                className="mt-2 w-full rounded-2xl border border-gold/30 bg-ivory/85 px-4 py-3.5 text-base text-ink outline-none transition focus:border-gold/70 focus:ring-2 focus:ring-gold/20 placeholder:text-ink/40"
                 placeholder="Digite seu nome"
               />
+              <span className="mt-2 block text-sm leading-relaxed text-ink/55">
+                Esse nome ajuda os noivos a saberem quem enviou as fotos.
+              </span>
             </label>
 
             <div>
@@ -174,13 +176,14 @@ export default function PhotoUploadPage() {
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="flex min-h-[148px] w-full flex-col items-center justify-center rounded-[28px] border border-dashed border-gold/45 bg-ivory/70 px-5 py-8 text-center transition hover:border-gold hover:bg-white/80"
+                className="group flex min-h-[170px] w-full flex-col items-center justify-center rounded-[30px] border-2 border-dashed border-gold bg-gradient-to-br from-gold/12 via-white/90 to-champagne/80 px-5 py-9 text-center shadow-[0_18px_42px_-34px_rgba(166,127,67,0.9)] transition hover:-translate-y-0.5 hover:border-gold-deep hover:bg-white hover:shadow-[0_22px_48px_-34px_rgba(166,127,67,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
               >
-                <ImagePlus className="h-9 w-9 text-gold" strokeWidth={1.35} />
-                <span className="mt-4 text-2xl font-semibold text-ink">Selecionar fotos</span>
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gold text-ivory shadow-lg shadow-gold/25 transition group-hover:scale-105">
+                  <ImagePlus className="h-7 w-7" strokeWidth={1.55} />
+                </span>
+                <span className="mt-5 text-3xl font-semibold text-ink">Selecionar fotos</span>
                 <span className="mt-2 max-w-sm text-base leading-relaxed text-ink-soft">
-                  Você pode enviar até {MAX_FILES} fotos por vez. As imagens são reduzidas antes
-                  do envio.
+                  Toque aqui para escolher até {MAX_FILES} fotos da sua galeria.
                 </span>
               </button>
             </div>

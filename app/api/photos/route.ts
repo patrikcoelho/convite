@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const MAX_FILES = 10;
+const MAX_FILES = 20;
 const MAX_FILE_SIZE = 3 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
